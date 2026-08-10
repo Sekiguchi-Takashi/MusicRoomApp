@@ -6,10 +6,15 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.midi.MidiHub
+import com.appathy.musicroom.ui.ChordGameActivity
+import com.appathy.musicroom.ui.EarGameActivity
 import com.appathy.musicroom.ui.MetronomeActivity
 import com.appathy.musicroom.ui.MidiActivity
 import com.appathy.musicroom.ui.PlayActivity
+import com.appathy.musicroom.ui.RecordActivity
 import com.appathy.musicroom.ui.RepetitionActivity
+import com.appathy.musicroom.ui.RhythmGameActivity
+import com.appathy.musicroom.ui.SongPracticeActivity
 import com.appathy.musicroom.ui.SoundLabActivity
 
 class MainActivity : AppCompatActivity(), MidiHub.Listener {
@@ -26,10 +31,15 @@ class MainActivity : AppCompatActivity(), MidiHub.Listener {
 
         findViewById<View>(R.id.cardMidi).setOnClickListener { open(MidiActivity::class.java) }
         findViewById<View>(R.id.btnMidi).setOnClickListener { open(MidiActivity::class.java) }
+        findViewById<View>(R.id.btnSong).setOnClickListener { open(SongPracticeActivity::class.java) }
         findViewById<View>(R.id.btnPlay).setOnClickListener { open(PlayActivity::class.java) }
+        findViewById<View>(R.id.btnRecord).setOnClickListener { open(RecordActivity::class.java) }
         findViewById<View>(R.id.btnMetronome).setOnClickListener { open(MetronomeActivity::class.java) }
         findViewById<View>(R.id.btnRepetition).setOnClickListener { open(RepetitionActivity::class.java) }
         findViewById<View>(R.id.btnSoundLab).setOnClickListener { open(SoundLabActivity::class.java) }
+        findViewById<View>(R.id.btnRhythm).setOnClickListener { open(RhythmGameActivity::class.java) }
+        findViewById<View>(R.id.btnEar).setOnClickListener { open(EarGameActivity::class.java) }
+        findViewById<View>(R.id.btnChord).setOnClickListener { open(ChordGameActivity::class.java) }
     }
 
     private fun open(cls: Class<*>) = startActivity(Intent(this, cls))

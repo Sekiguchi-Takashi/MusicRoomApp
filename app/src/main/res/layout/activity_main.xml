@@ -60,14 +60,48 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="10dp"
-            android:text="メニュー"
+            android:text="🎮 遊ぶ"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btnRhythm"
+            style="@style/MenuItem"
+            android:text="🎹  ピアノリズム\n落ちてくるノートをタイミングよく弾く" />
+
+        <TextView
+            android:id="@+id/btnEar"
+            style="@style/MenuItem"
+            android:text="👂  音当て\n聴こえた音を鍵盤で答える" />
+
+        <TextView
+            android:id="@+id/btnChord"
+            style="@style/MenuItem"
+            android:text="🎼  コード\n指定された和音を同時に押す" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="10dp"
+            android:text="🎹 練習"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btnSong"
+            style="@style/MenuItem"
+            android:text="🎼  楽曲練習\n曲を弾いて小節ごとに評価する" />
 
         <TextView
             android:id="@+id/btnPlay"
             style="@style/MenuItem"
             android:text="🎹  自由演奏\n鍵盤で弾く / 音色を選ぶ" />
+
+        <TextView
+            android:id="@+id/btnRecord"
+            style="@style/MenuItem"
+            android:text="⏺  録音・再生\n弾いた演奏を記録して聴き返す" />
 
         <TextView
             android:id="@+id/btnMetronome"
@@ -78,6 +112,15 @@
             android:id="@+id/btnRepetition"
             style="@style/MenuItem"
             android:text="⚡  連打チャレンジ\n速さと均一性を測る" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="10dp"
+            android:text="🎼 つくる・設定"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/btnSoundLab"
@@ -93,7 +136,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="v1.0 — Phase 1 (MIDI基盤) と Phase 2 の一部を実装。うた練習・作曲・AI音楽先生は次バージョン以降。"
+            android:text="v1.3 — Phase 1・Phase 2 完了。うた練習・作曲・AI音楽先生は次バージョン以降。"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

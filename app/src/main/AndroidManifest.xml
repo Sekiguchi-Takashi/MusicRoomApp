@@ -46,6 +46,21 @@
         <activity
             android:name=".ui.SoundLabActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.RecordActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.EarGameActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.ChordGameActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.RhythmGameActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".ui.SongPracticeActivity"
+            android:screenOrientation="landscape" />
     </application>
 
 </manifest>
