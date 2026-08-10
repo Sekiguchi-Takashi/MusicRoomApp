@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏱ メトロノーム"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/textBpm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100 BPM"
+                android:textColor="@color/accent_warm"
+                android:textSize="42sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnMinus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="70dp"
+                    android:text="−" />
+
+                <Button
+                    android:id="@+id/btnPlus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:minWidth="70dp"
+                    android:text="＋" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBpm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:max="220"
+                android:progress="60" />
+
+            <TextView
+                android:id="@+id/textBeats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:letterSpacing="0.2"
+                android:text="○ ○ ○ ○"
+                android:textColor="@color/text_secondary"
+                android:textSize="26sp" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="拍子" />
+
+        <Spinner
+            android:id="@+id/spinnerMeter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="6dp"
+            android:text="分割" />
+
+        <Spinner
+            android:id="@+id/spinnerDivision"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:checked="true"
+            android:text="1拍目にアクセント"
+            android:textColor="@color/text_primary" />
+
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="▶ START" />
+    </LinearLayout>
+</ScrollView>

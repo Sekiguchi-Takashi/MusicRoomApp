@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/textNow"
+            android:layout_width="86dp"
+            android:layout_height="wrap_content"
+            android:text="—"
+            android:textColor="@color/accent_warm"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerTimbre"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnOctDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:minWidth="52dp"
+            android:text="◀" />
+
+        <TextView
+            android:id="@+id/textOctave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="56dp"
+            android:gravity="center"
+            android:text="C3"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btnOctUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="52dp"
+            android:text="▶" />
+
+        <ToggleButton
+            android:id="@+id/toggleSustain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textOff="Sus OFF"
+            android:textOn="Sus ON" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textMidiBadge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="6dp"
+        android:text="MIDI 未接続 — 画面鍵盤で演奏できます"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp" />
+
+    <com.appathy.musicroom.ui.KeyboardView
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

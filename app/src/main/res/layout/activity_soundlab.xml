@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎮 ゲーム音ラボ"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textPadHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="MIDI未接続 — 画面から試聴できます"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp"
+            android:text="プリセット" />
+
+        <Spinner
+            android:id="@+id/spinnerPreset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="6dp"
+            android:text="波形" />
+
+        <Spinner
+            android:id="@+id/spinnerWave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/labelStart"
+            style="@style/SectionTitle"
+            android:layout_marginTop="14dp"
+            android:text="開始周波数" />
+
+        <SeekBar
+            android:id="@+id/seekStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/labelEnd"
+            style="@style/SectionTitle"
+            android:text="終了周波数" />
+
+        <SeekBar
+            android:id="@+id/seekEnd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/labelDuration"
+            style="@style/SectionTitle"
+            android:text="長さ" />
+
+        <SeekBar
+            android:id="@+id/seekDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/labelDecay"
+            style="@style/SectionTitle"
+            android:text="減衰" />
+
+        <SeekBar
+            android:id="@+id/seekDecay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/labelSteps"
+            style="@style/SectionTitle"
+            android:text="ピッチ階段" />
+
+        <SeekBar
+            android:id="@+id/seekSteps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="7" />
+
+        <TextView
+            android:id="@+id/labelNoise"
+            style="@style/SectionTitle"
+            android:text="ノイズ量" />
+
+        <SeekBar
+            android:id="@+id/seekNoise"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <Button
+            android:id="@+id/btnPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="▶ 試聴" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="💾 WAVで保存" />
+
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:padding="16dp"
+            android:text="MIDIパッド (ノート36〜43) を叩くと、8種類のプリセットをそのまま鳴らせます。それ以外の鍵盤を押すと、現在の音を鍵盤の高さに移調して鳴らします。"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>

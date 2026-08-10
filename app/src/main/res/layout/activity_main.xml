@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎵 音楽室"
+            android:textColor="@color/text_primary"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="スマホ＋MIDIキーボード＝小さな音楽学習ゲーム機"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/cardMidi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:id="@+id/textMidiState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎹 MIDI ○ 未接続"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textMidiDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="タップしてデバイスを選ぶ"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="10dp"
+            android:text="メニュー"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btnPlay"
+            style="@style/MenuItem"
+            android:text="🎹  自由演奏\n鍵盤で弾く / 音色を選ぶ" />
+
+        <TextView
+            android:id="@+id/btnMetronome"
+            style="@style/MenuItem"
+            android:text="⏱  メトロノーム\nBPM・拍子・分割・アクセント" />
+
+        <TextView
+            android:id="@+id/btnRepetition"
+            style="@style/MenuItem"
+            android:text="⚡  連打チャレンジ\n速さと均一性を測る" />
+
+        <TextView
+            android:id="@+id/btnSoundLab"
+            style="@style/MenuItem"
+            android:text="🎮  ゲーム音ラボ\n効果音をつくって WAV 保存" />
+
+        <TextView
+            android:id="@+id/btnMidi"
+            style="@style/MenuItem"
+            android:text="🔌  MIDIデバイス\n接続 / 入力テスト" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="v1.0 — Phase 1 (MIDI基盤) と Phase 2 の一部を実装。うた練習・作曲・AI音楽先生は次バージョン以降。"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
+    </LinearLayout>
+</ScrollView>

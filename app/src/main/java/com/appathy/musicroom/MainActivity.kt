@@ -1,0 +1,67 @@
+package com.appathy.musicroom
+
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.appathy.musicroom.midi.MidiHub
+import com.appathy.musicroom.ui.MetronomeActivity
+import com.appathy.musicroom.ui.MidiActivity
+import com.appathy.musicroom.ui.PlayActivity
+import com.appathy.musicroom.ui.RepetitionActivity
+import com.appathy.musicroom.ui.SoundLabActivity
+
+class MainActivity : AppCompatActivity(), MidiHub.Listener {
+
+    private lateinit var textMidiState: TextView
+    private lateinit var textMidiDetail: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        textMidiState = findViewById(R.id.textMidiState)
+        textMidiDetail = findViewById(R.id.textMidiDetail)
+
+        findViewById<View>(R.id.cardMidi).setOnClickListener { open(MidiActivity::class.java) }
+        findViewById<View>(R.id.btnMidi).setOnClickListener { open(MidiActivity::class.java) }
+        findViewById<View>(R.id.btnPlay).setOnClickListener { open(PlayActivity::class.java) }
+        findViewById<View>(R.id.btnMetronome).setOnClickListener { open(MetronomeActivity::class.java) }
+        findViewById<View>(R.id.btnRepetition).setOnClickListener { open(RepetitionActivity::class.java) }
+        findViewById<View>(R.id.btnSoundLab).setOnClickListener { open(SoundLabActivity::class.java) }
+    }
+
+    private fun open(cls: Class<*>) = startActivity(Intent(this, cls))
+
+    override fun onResume() {
+        super.onResume()
+        MidiHub.addListener(this)
+        MidiHub.autoConnect()
+        updateMidiCard()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MidiHub.removeListener(this)
+    }
+
+    override fun onConnectionChanged() = updateMidiCard()
+
+    override fun onDeviceListChanged() = updateMidiCard()
+
+    private fun updateMidiCard() {
+        if (MidiHub.isConnected) {
+            textMidiState.text = "🎹 MIDI ● 接続中"
+            textMidiDetail.text = MidiHub.connectedName
+        } else {
+            val found = MidiHub.devices().size
+            textMidiState.text = "🎹 MIDI ○ 未接続"
+            textMidiDetail.text = if (found > 0) {
+                "検出 " + found + "台 — タップして接続"
+            } else {
+                "USB-C で MIDIキーボードを接続してください"
+            }
+        }
+    }
+}
