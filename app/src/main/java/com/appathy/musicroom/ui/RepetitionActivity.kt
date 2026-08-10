@@ -118,7 +118,7 @@ class RepetitionActivity : AppCompatActivity(), MidiHub.Listener {
         renderDots()
         updateLive()
 
-        if (hits.size >= targetCount) finish()
+        if (hits.size >= targetCount) finishChallenge()
     }
 
     private fun intervalsMs(): List<Double> {
@@ -154,7 +154,7 @@ class RepetitionActivity : AppCompatActivity(), MidiHub.Listener {
         textDots.text = sb.toString()
     }
 
-    private fun finish() {
+    private fun finishChallenge() {
         running = false
         btnStart.text = "▶ スタート"
         val intervals = intervalsMs()

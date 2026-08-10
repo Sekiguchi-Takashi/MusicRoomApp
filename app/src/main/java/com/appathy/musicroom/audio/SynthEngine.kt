@@ -107,7 +107,7 @@ object SynthEngine {
         if (note < 0 || note > 127) return
         val freq = MusicEvent.frequency(note)
         val amp = (velocity.coerceIn(1, 127) / 127.0).let { it * it * 0.9 + 0.1 }
-        allocate(note, freq, amp, wave, -1)
+        allocate(note, freq, amp, wave, -1.0)
     }
 
     fun noteOff(note: Int) {

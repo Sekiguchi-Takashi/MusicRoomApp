@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.0 (versionCode 1)
+- v1.1 (versionCode 2)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1 全体 + Phase 2 の一部** を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
