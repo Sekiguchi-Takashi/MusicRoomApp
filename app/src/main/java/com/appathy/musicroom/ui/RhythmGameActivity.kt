@@ -12,6 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.data.Kind
+import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.game.ChartGenerator
 import com.appathy.musicroom.game.Judge
 import com.appathy.musicroom.game.Judgement
@@ -215,6 +217,16 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
         val miss = counts[Judgement.MISS] ?: 0
         val accuracy = if (total == 0) 0.0 else (perfect * 1.0 + great * 0.7 + good * 0.4) / total
         val meanError = if (errors.isEmpty()) 0.0 else errors.average()
+
+        PracticeDb.get(this).insertSession(
+            kind = Kind.RHYTHM,
+            label = difficultyChoices[spinnerDifficulty.selectedItemPosition],
+            bpm = bpmValues[spinnerBpm.selectedItemPosition],
+            accuracy = accuracy,
+            meanErrorMs = meanError,
+            score = score,
+            itemCount = total
+        )
 
         textPanelTitle.text = "RESULT  " + Judge.rank(accuracy)
         textPanelBody.text = score.toString() + " 点\n\n" +

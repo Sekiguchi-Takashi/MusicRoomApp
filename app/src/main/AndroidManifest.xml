@@ -61,6 +61,9 @@
         <activity
             android:name=".ui.SongPracticeActivity"
             android:screenOrientation="landscape" />
+        <activity
+            android:name=".ui.HistoryActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

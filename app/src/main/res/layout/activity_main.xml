@@ -123,6 +123,11 @@
             android:textSize="13sp" />
 
         <TextView
+            android:id="@+id/btnHistory"
+            style="@style/MenuItem"
+            android:text="📈  練習の記録\n推移・苦手小節・次の練習の提案" />
+
+        <TextView
             android:id="@+id/btnSoundLab"
             style="@style/MenuItem"
             android:text="🎮  ゲーム音ラボ\n効果音をつくって WAV 保存" />
@@ -136,7 +141,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="v1.3 — Phase 1・Phase 2 完了。うた練習・作曲・AI音楽先生は次バージョン以降。"
+            android:text="v1.4 — Phase 1・2 完了、練習記録の永続化とコーチ機能を追加。うた練習・作曲・AI音楽先生は次バージョン以降。"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

@@ -9,6 +9,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.data.Kind
+import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.midi.EventType
 import com.appathy.musicroom.midi.MidiHub
 import com.appathy.musicroom.midi.MusicEvent
@@ -177,5 +179,11 @@ class RepetitionActivity : AppCompatActivity(), MidiHub.Listener {
             "平均強さ   " + velocityAverage + "\n\n" +
             comment
         textResult.setTextColor(getColor(R.color.text_primary))
+        PracticeDb.get(this).insertSession(
+            kind = Kind.REPEAT,
+            label = MusicEvent.noteName(targetNote),
+            accuracy = stability / 100.0,
+            itemCount = hits.size
+        )
     }
 }

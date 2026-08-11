@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.3 (versionCode 4)
+- v1.4 (versionCode 5)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1・Phase 2 完了** を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -21,6 +21,7 @@
 | §9.2, §48 音当て | `ui/EarGameActivity.kt` (単音／2音／3音／音程) |
 | §9.3 コードゲーム | `ui/ChordGameActivity.kt` (三和音・四和音、押鍵セット一致で判定) |
 | Phase2 楽曲練習 | `song/Song.kt`, `song/SongChart.kt`, `ui/SongPracticeActivity.kt`, `ui/SongRollView.kt` |
+| §36/§37/§44 記録の永続化・弱点検出・練習推薦 | `data/PracticeDb.kt` (SQLite), `data/Coach.kt`, `ui/HistoryActivity.kt`, `ui/TrendView.kt` |
 | §43 小節単位評価・苦手小節抽出 | `song/SongEvaluator.kt` 相当 (`song/SongChart.kt` 内)。結果行タップで該当小節を4回ループ練習 |
 | 音源 | `audio/SynthEngine.kt` (AudioTrack 低レイテンシ・16音ポリ) |
 | ゲーム音 | `audio/SeRenderer.kt`, `ui/SoundLabActivity.kt`, WAV書き出し |
@@ -33,7 +34,8 @@
 - Phase 4: 作曲・歌詞のモーラ制約・歌詞タイミング (§11〜§14, §55〜§60)
 - Phase 5: 能力モデル・弱点検出・練習推薦・AI音楽先生 (§36, §37, §44〜§54, §61〜§67)
 - BLE MIDI (現状は USB MIDI のみ。`MidiHub` は transport 非依存なので、スキャンUIを足すだけで載る)
-- データ永続化 (現状は最終接続デバイス名と録音1テイクのみ。能力モデルを載せる時点で DB が要る)
+- 能力モデルは現状ヒューリスティック (`data/Coach.kt`)。統計が貯まったら推定へ置き換える。
+- 記録の書き出し (CSV/JSON) と、セッション詳細画面はまだない。
 
 ## 設計上の約束
 - **すべての入力は `MusicEvent` に正規化してから使う。** MIDI もタッチ鍵盤も `MidiHub` を通る (`MidiHub.inject`)。

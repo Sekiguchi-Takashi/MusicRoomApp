@@ -14,6 +14,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.data.Kind
+import com.appathy.musicroom.data.MeasureRow
+import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.game.Judge
 import com.appathy.musicroom.game.Judgement
 import com.appathy.musicroom.midi.EventSource
@@ -257,11 +260,32 @@ class SongPracticeActivity : AppCompatActivity(), MidiHub.Listener, SongRollView
                     "\n下の行をタップすると、その小節だけを4回くり返して練習できます。"
             })
 
+        saveSession(c, stats, overall)
+
         setupArea.visibility = View.VISIBLE
         resultArea.removeAllViews()
         resultArea.addView(header())
         stats.forEach { stat -> resultArea.addView(row(stat, weak.contains(stat))) }
         panel.visibility = View.VISIBLE
+    }
+
+    private fun saveSession(c: SongChart, stats: List<MeasureStat>, overall: Double) {
+        val errors = c.notes.filter { it.judgement != null && it.judgement != Judgement.MISS }
+            .map { it.errorMs }
+        val db = PracticeDb.get(this)
+        val sessionId = db.insertSession(
+            kind = Kind.SONG,
+            label = c.song.title,
+            bpm = c.bpm,
+            accuracy = overall,
+            meanErrorMs = if (errors.isEmpty()) 0.0 else errors.average(),
+            itemCount = c.notes.size
+        )
+        if (sessionId > 0) {
+            db.insertMeasures(sessionId, stats.map { stat ->
+                MeasureRow(stat.measure, stat.accuracy, stat.meanErrorMs, stat.miss, stat.wrong)
+            })
+        }
     }
 
     private fun header(): View = TextView(this).apply {

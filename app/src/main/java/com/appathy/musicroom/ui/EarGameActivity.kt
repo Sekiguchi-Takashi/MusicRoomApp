@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.MusicTheory
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.data.Kind
+import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.midi.EventSource
 import com.appathy.musicroom.midi.EventType
 import com.appathy.musicroom.midi.MidiHub
@@ -63,8 +65,21 @@ class EarGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
 
     override fun onPause() {
         super.onPause()
+        saveSession()
         MidiHub.removeListener(this)
         SynthEngine.stop()
+    }
+
+    private fun saveSession() {
+        if (asked < 3) return
+        PracticeDb.get(this).insertSession(
+            kind = Kind.EAR,
+            label = levels[spinnerLevel.selectedItemPosition],
+            accuracy = correct.toDouble() / asked,
+            itemCount = asked
+        )
+        asked = 0
+        correct = 0
     }
 
     private fun noteCount(): Int = when (spinnerLevel.selectedItemPosition) {

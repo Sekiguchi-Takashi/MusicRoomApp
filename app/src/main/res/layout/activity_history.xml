@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📈 練習の記録"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:padding="16dp"
+            android:text="まだ記録がありません。"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="正確度の推移 (古い順)" />
+
+        <com.appathy.musicroom.ui.TrendView
+            android:id="@+id/trendView"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:background="@drawable/bg_card" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="コーチからの提案" />
+
+        <LinearLayout
+            android:id="@+id/adviceArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="苦手小節 (曲を横断した平均)" />
+
+        <LinearLayout
+            android:id="@+id/weakArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="最近のセッション" />
+
+        <LinearLayout
+            android:id="@+id/sessionArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="記録をすべて削除" />
+    </LinearLayout>
+</ScrollView>

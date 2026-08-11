@@ -29,7 +29,7 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p out
-          cp app/build/outputs/apk/debug/app-debug.apk out/MusicRoom-v1.3-${{ github.run_number }}.apk
+          cp app/build/outputs/apk/debug/app-debug.apk out/MusicRoom-v1.4-${{ github.run_number }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -38,6 +38,6 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.3.${{ github.run_number }}
-          name: MusicRoom v1.3.${{ github.run_number }}
+          tag_name: v1.4.${{ github.run_number }}
+          name: MusicRoom v1.4.${{ github.run_number }}
           files: out/*.apk
