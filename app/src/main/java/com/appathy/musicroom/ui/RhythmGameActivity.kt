@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.audio.Wave
 import com.appathy.musicroom.data.Kind
 import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.game.ChartGenerator
@@ -146,7 +147,7 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
     }
 
     private fun hit(lane: Int, velocity: Int) {
-        SynthEngine.noteOn(ChartGenerator.noteOfLane(lane), velocity)
+        SynthEngine.noteOn(ChartGenerator.noteOfLane(lane), velocity, Wave.PIANO)
         handler.postDelayed({ SynthEngine.noteOff(ChartGenerator.noteOfLane(lane)) }, 180)
         rhythmView.flash(lane)
         if (!running) return

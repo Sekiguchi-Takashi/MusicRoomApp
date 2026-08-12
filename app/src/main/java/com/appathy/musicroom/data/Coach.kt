@@ -111,6 +111,35 @@ object Coach {
             )
         }
 
+        // うた
+        val sing = db.averages(Kind.SING)
+        if (sing != null) {
+            val cents = sing.second
+            when {
+                sing.first < 0.5 -> out.add(
+                    Advice(
+                        "うたの音程がまだ取れていません",
+                        "正確度 " + pct(sing.first) + "。キーを1オクターブ下げ、ガイド音を鳴らしながら合わせてください。"
+                    )
+                )
+                cents < -30 -> out.add(
+                    Advice(
+                        "うたがぶら下がりぎみです",
+                        "平均 " + fmt(cents) + " セント低めです。息の支えが弱いときに出やすい癖です。"
+                    )
+                )
+                cents > 30 -> out.add(
+                    Advice(
+                        "うたが上ずりぎみです",
+                        "平均 " + fmt(cents) + " セント高めです。力みを抜くと収まります。"
+                    )
+                )
+                sing.first >= 0.85 -> out.add(
+                    Advice("うたは安定しています", "正確度 " + pct(sing.first) + "。キーを上げるか原速に戻してみましょう。")
+                )
+            }
+        }
+
         // 連打
         val repeat = db.averages(Kind.REPEAT)
         if (repeat != null && repeat.first < 0.7) {

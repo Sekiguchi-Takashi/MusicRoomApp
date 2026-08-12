@@ -8,6 +8,7 @@
         android:name="android.hardware.usb.host"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -64,6 +65,20 @@
         <activity
             android:name=".ui.HistoryActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.TunerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.SingActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".ui.ComposeActivity"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".ui.LyricsActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.audio.Wave
 import com.appathy.musicroom.data.Kind
 import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.midi.EventType
@@ -102,8 +103,12 @@ class RepetitionActivity : AppCompatActivity(), MidiHub.Listener {
     }
 
     override fun onMusicEvent(event: MusicEvent) {
+        if (event.type == EventType.NOTE_OFF) {
+            SynthEngine.noteOff(event.note)
+            return
+        }
         if (event.type != EventType.NOTE_ON) return
-        SynthEngine.noteOn(event.note, event.velocity)
+        SynthEngine.noteOn(event.note, event.velocity, Wave.PIANO)
         if (running) registerHit(event.note, event.velocity)
     }
 

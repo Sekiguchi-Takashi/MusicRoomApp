@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.MusicTheory
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.audio.Wave
 import com.appathy.musicroom.data.Kind
 import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.midi.EventSource
@@ -120,7 +121,7 @@ class ChordGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Ca
 
     private fun press(note: Int, velocity: Int) {
         held.add(MusicTheory.pitchClass(note))
-        SynthEngine.noteOn(note, velocity)
+        SynthEngine.noteOn(note, velocity, Wave.PIANO)
         updateHeld()
         check()
     }

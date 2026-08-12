@@ -58,7 +58,9 @@ class HistoryActivity : AppCompatActivity() {
                 "最後の練習 " + stamp.format(Date(sessions.first().timestamp))
         }
 
-        val timed = sessions.filter { it.kind == Kind.SONG || it.kind == Kind.RHYTHM }
+        val timed = sessions.filter {
+            it.kind == Kind.SONG || it.kind == Kind.RHYTHM || it.kind == Kind.SING
+        }
             .sortedBy { it.timestamp }
             .map { it.accuracy }
         trendView.values = timed
@@ -100,13 +102,17 @@ class HistoryActivity : AppCompatActivity() {
                 val detail = StringBuilder()
                 detail.append(stamp.format(Date(session.timestamp)))
                 detail.append("  ").append(Kind.label(session.kind))
-                if (session.label.isNotBlank() && session.kind == Kind.SONG) {
+                if (session.label.isNotBlank() && (session.kind == Kind.SONG || session.kind == Kind.SING)) {
                     detail.append(" / ").append(session.label)
                 }
                 if (session.bpm > 0) detail.append(" / BPM ").append(session.bpm)
                 detail.append("\n正確度 ").append((session.accuracy * 100).toInt()).append("%")
-                if (session.kind == Kind.SONG || session.kind == Kind.RHYTHM) {
-                    detail.append(" / 平均ズレ ").append(session.meanErrorMs.toInt()).append("ms")
+                when (session.kind) {
+                    Kind.SONG, Kind.RHYTHM ->
+                        detail.append(" / 平均ズレ ").append(session.meanErrorMs.toInt()).append("ms")
+                    Kind.SING ->
+                        detail.append(" / 平均 ").append(session.meanErrorMs.toInt()).append("セント")
+                    else -> {}
                 }
                 if (session.score > 0) detail.append(" / ").append(session.score).append("点")
                 sessionArea.addView(hint(detail.toString()))

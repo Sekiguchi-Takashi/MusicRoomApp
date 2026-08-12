@@ -94,6 +94,16 @@
             android:text="🎼  楽曲練習\n曲を弾いて小節ごとに評価する" />
 
         <TextView
+            android:id="@+id/btnSing"
+            style="@style/MenuItem"
+            android:text="🎤  うた練習\n歌った音程を測って小節ごとに評価する" />
+
+        <TextView
+            android:id="@+id/btnTuner"
+            style="@style/MenuItem"
+            android:text="🎯  音程チェック\n声の高さをリアルタイムで表示" />
+
+        <TextView
             android:id="@+id/btnPlay"
             style="@style/MenuItem"
             android:text="🎹  自由演奏\n鍵盤で弾く / 音色を選ぶ" />
@@ -128,6 +138,11 @@
             android:text="📈  練習の記録\n推移・苦手小節・次の練習の提案" />
 
         <TextView
+            android:id="@+id/btnCompose"
+            style="@style/MenuItem"
+            android:text="🎼  作曲\n弾いて入力・編集して自分の曲をつくる" />
+
+        <TextView
             android:id="@+id/btnSoundLab"
             style="@style/MenuItem"
             android:text="🎮  ゲーム音ラボ\n効果音をつくって WAV 保存" />
@@ -141,7 +156,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="v1.4 — Phase 1・2 完了、練習記録の永続化とコーチ機能を追加。うた練習・作曲・AI音楽先生は次バージョン以降。"
+            android:text="v1.7 — Phase 1〜4 完了。作曲と歌詞のモーラ検査を追加。Phase 5 (AI音楽先生) は保留中。うた練習・作曲・AI音楽先生は次バージョン以降。"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

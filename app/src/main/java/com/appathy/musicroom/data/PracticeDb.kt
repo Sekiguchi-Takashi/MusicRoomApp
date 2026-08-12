@@ -31,6 +31,7 @@ object Kind {
     const val EAR = "ear"
     const val CHORD = "chord"
     const val REPEAT = "repeat"
+    const val SING = "sing"
 
     fun label(kind: String): String = when (kind) {
         SONG -> "楽曲練習"
@@ -38,6 +39,7 @@ object Kind {
         EAR -> "音当て"
         CHORD -> "コード"
         REPEAT -> "連打"
+        SING -> "うた練習"
         else -> kind
     }
 }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            style="@style/SectionTitle"
+            android:text="曲名" />
+
+        <EditText
+            android:id="@+id/editTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="無題"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:textColor="@color/text_primary" />
+
+        <TextView
+            android:id="@+id/labelBpm"
+            style="@style/SectionTitle"
+            android:layout_marginTop="14dp"
+            android:text="テンポ" />
+
+        <SeekBar
+            android:id="@+id/seekBpm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="170" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:layout_marginTop="10dp"
+            android:text="グリッド" />
+
+        <Spinner
+            android:id="@+id/spinnerGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/labelBars"
+            style="@style/SectionTitle"
+            android:layout_marginTop="10dp"
+            android:text="小節数" />
+
+        <SeekBar
+            android:id="@+id/seekBars"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="15" />
+
+        <TextView
+            android:id="@+id/labelRange"
+            style="@style/SectionTitle"
+            android:layout_marginTop="10dp"
+            android:text="音域の下端" />
+
+        <SeekBar
+            android:id="@+id/seekLow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="36" />
+    </LinearLayout>
+</ScrollView>

@@ -17,6 +17,21 @@ data class Song(
 
 object SongLibrary {
 
+    /** 内蔵曲 + 自作曲。自作曲は「★」を頭につけて区別する。 */
+    fun all(context: android.content.Context): List<Song> {
+        val user = try {
+            com.appathy.musicroom.data.UserSongStore.all(context)
+                .filter { it.notes.isNotEmpty() }
+                .map { it.toSong().copy(title = "★" + it.title) }
+        } catch (e: Exception) {
+            emptyList()
+        }
+        return songs + user
+    }
+
+    fun titlesOf(list: List<Song>): Array<String> = list.map { it.title }.toTypedArray()
+
+
     private const val C4 = 60
     private const val D4 = 62
     private const val E4 = 64

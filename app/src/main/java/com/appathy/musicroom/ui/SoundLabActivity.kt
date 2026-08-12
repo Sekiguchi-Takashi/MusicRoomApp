@@ -1,5 +1,8 @@
 package com.appathy.musicroom.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -8,6 +11,8 @@ import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.OneShotPlayer
 import com.appathy.musicroom.audio.SePresets
@@ -159,6 +164,16 @@ class SoundLabActivity : AppCompatActivity(), MidiHub.Listener {
     }
 
     private fun save() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 2
+            )
+            textStatus.text = "保存にはストレージの許可が必要です。許可後にもう一度 [保存] を押してください。"
+            return
+        }
         val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val fileName = "se_" + spec.wave.name.lowercase(Locale.US) + "_" + stamp + ".wav"
         val pcm = SeRenderer.render(spec)

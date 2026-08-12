@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.MusicTheory
 import com.appathy.musicroom.audio.SynthEngine
+import com.appathy.musicroom.audio.Wave
 import com.appathy.musicroom.data.Kind
 import com.appathy.musicroom.data.PracticeDb
 import com.appathy.musicroom.midi.EventSource
@@ -111,7 +112,7 @@ class EarGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         keyboard.clearExternal()
         question.forEachIndexed { index, note ->
             handler.postDelayed({
-                SynthEngine.noteOn(note, 100)
+                SynthEngine.noteOn(note, 100, Wave.PIANO)
                 handler.postDelayed({ SynthEngine.noteOff(note) }, 520)
             }, index * 620L)
         }
@@ -157,13 +158,13 @@ class EarGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
             return
         }
         if (event.type != EventType.NOTE_ON) return
-        SynthEngine.noteOn(event.note, event.velocity)
+        SynthEngine.noteOn(event.note, event.velocity, Wave.PIANO)
         keyboard.setExternalNote(event.note, true)
         submit(event.note)
     }
 
     override fun onKeyDown(note: Int, velocity: Int) {
-        SynthEngine.noteOn(note, velocity)
+        SynthEngine.noteOn(note, velocity, Wave.PIANO)
         submit(note)
     }
 
