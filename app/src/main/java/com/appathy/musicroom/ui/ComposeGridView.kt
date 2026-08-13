@@ -33,6 +33,23 @@ class ComposeGridView @JvmOverloads constructor(
             postInvalidateOnAnimation()
         }
 
+    /** 伴奏トラック。editingBacking が true のときだけ編集できる。 */
+    var backing: MutableList<SongNote> = ArrayList()
+        set(value) {
+            field = value
+            postInvalidateOnAnimation()
+        }
+
+    var editingBacking: Boolean = false
+        set(value) {
+            field = value
+            postInvalidateOnAnimation()
+        }
+
+    /** 編集対象のトラック。 */
+    private fun target(): MutableList<SongNote> = if (editingBacking) backing else notes
+
+
     var lowPitch = 60
     var highPitch = 72
     var beatsPerBar = 4
@@ -61,6 +78,9 @@ class ComposeGridView @JvmOverloads constructor(
     private val gridPaint = Paint().apply { color = Color.parseColor("#232B3A") }
     private val barPaint = Paint().apply { color = Color.parseColor("#3A445C") }
     private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FFD166") }
+    private val backingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#5A7FA8") }
+    private val dimPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#66FFD166") }
+    private val dimBackingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#665A7FA8") }
     private val headPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#4ECDC4")
         strokeWidth = 4f
@@ -127,19 +147,30 @@ class ComposeGridView @JvmOverloads constructor(
             beat += step
         }
 
-        notes.forEach { note ->
-            if (note.pitch < lowPitch || note.pitch > highPitch) return@forEach
-            val x1 = xOf(note.beat)
-            val x2 = xOf(note.beat + note.lengthBeats)
-            if (x2 < labelWidth || x1 > w) return@forEach
-            val y = yOf(note.pitch)
-            rect.set(
-                maxOf(x1, labelWidth) + 2f,
-                y + rh * 0.14f,
-                x2 - 2f,
-                y + rh * 0.86f
-            )
-            canvas.drawRoundRect(rect, rh * 0.18f, rh * 0.18f, notePaint)
+        fun drawTrack(list: List<SongNote>, paint: Paint) {
+            list.forEach { note ->
+                if (note.pitch < lowPitch || note.pitch > highPitch) return@forEach
+                val x1 = xOf(note.beat)
+                val x2 = xOf(note.beat + note.lengthBeats)
+                if (x2 < labelWidth || x1 > w) return@forEach
+                val y = yOf(note.pitch)
+                rect.set(
+                    maxOf(x1, labelWidth) + 2f,
+                    y + rh * 0.14f,
+                    x2 - 2f,
+                    y + rh * 0.86f
+                )
+                canvas.drawRoundRect(rect, rh * 0.18f, rh * 0.18f, paint)
+            }
+        }
+
+        // 編集していないトラックを薄く先に描く
+        if (editingBacking) {
+            drawTrack(notes, dimPaint)
+            drawTrack(backing, backingPaint)
+        } else {
+            drawTrack(backing, dimBackingPaint)
+            drawTrack(notes, notePaint)
         }
 
         if (playheadBeat >= 0) {
@@ -162,7 +193,7 @@ class ComposeGridView @JvmOverloads constructor(
                 }
                 val beat = beatOf(event.x)
                 val pitch = pitchOf(event.y)
-                dragNote = notes.firstOrNull {
+                dragNote = target().firstOrNull {
                     it.pitch == pitch && beat >= it.beat && beat < it.beat + it.lengthBeats
                 }
                 dragStartX = event.x
@@ -189,10 +220,11 @@ class ComposeGridView @JvmOverloads constructor(
                 val target = dragOriginalLength + deltaBeats
                 val snapped = (target / step).toInt().coerceAtLeast(1) * step
                 if (kotlin.math.abs(snapped - note.lengthBeats) > 0.001) {
-                    val index = notes.indexOf(note)
+                    val list = target()
+                    val index = list.indexOf(note)
                     if (index >= 0) {
                         val updated = note.copy(lengthBeats = snapped)
-                        notes[index] = updated
+                        list[index] = updated
                         dragNote = updated
                         dragged = true
                         callback?.onNotesChanged()
@@ -209,12 +241,13 @@ class ComposeGridView @JvmOverloads constructor(
                 }
                 val beat = floor(beatOf(event.x) / step) * step
                 val pitch = pitchOf(event.y)
+                val list = target()
                 val existing = dragNote
                 if (existing != null) {
-                    notes.remove(existing)
+                    list.remove(existing)
                 } else if (beat >= 0 && beat < totalBeats()) {
-                    notes.add(SongNote(beat, step, pitch))
-                    notes.sortBy { it.beat }
+                    list.add(SongNote(beat, step, pitch))
+                    list.sortBy { it.beat }
                     callback?.onNotePreview(pitch)
                 }
                 dragNote = null

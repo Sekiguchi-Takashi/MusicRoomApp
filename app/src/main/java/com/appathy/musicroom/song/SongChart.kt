@@ -20,7 +20,9 @@ class SongChart(
     val notes: List<PlayNote>,
     val barStartMs: List<Double>,
     val measureNumbers: List<Int>,
-    val endMs: Double
+    val endMs: Double,
+    /** 伴奏 (判定しない。再生のみ)。 */
+    val backing: List<PlayNote> = emptyList()
 ) {
     val pitches: List<Int> = notes.map { it.pitch }.distinct().sorted()
 
@@ -54,8 +56,10 @@ object ChartBuilder {
         val spanBeats = (range.last - range.first + 1).toDouble() * barBeats
 
         val out = ArrayList<PlayNote>()
+        val backing = ArrayList<PlayNote>()
         val barStarts = ArrayList<Double>()
         val numbers = ArrayList<Int>()
+        val selectedBacking = song.accompaniment.filter { (it.beat / barBeats).toInt() in range }
 
         for (rep in 0 until repeats) {
             val repOffset = rep * spanBeats * msPerBeat
@@ -74,10 +78,21 @@ object ChartBuilder {
                     )
                 )
             }
+            selectedBacking.forEach { n ->
+                backing.add(
+                    PlayNote(
+                        timeMs = leadIn + repOffset + (n.beat - firstBeat) * msPerBeat,
+                        durationMs = n.lengthBeats * msPerBeat,
+                        pitch = n.pitch,
+                        measure = (n.beat / barBeats).toInt()
+                    )
+                )
+            }
         }
         out.sortBy { it.timeMs }
+        backing.sortBy { it.timeMs }
         val end = (out.maxOfOrNull { it.timeMs + it.durationMs } ?: leadIn) + msPerBeat
-        return SongChart(song, bpm, out, barStarts, numbers, end)
+        return SongChart(song, bpm, out, barStarts, numbers, end, backing)
     }
 }
 

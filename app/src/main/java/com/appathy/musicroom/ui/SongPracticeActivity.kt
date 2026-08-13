@@ -165,7 +165,22 @@ class SongPracticeActivity : AppCompatActivity(), MidiHub.Listener, SongRollView
         running = true
         rollView.postInvalidateOnAnimation()
         handler.post(ticker)
+        scheduleBacking(built)
         if (demo) scheduleDemo(built)
+    }
+
+    /** 自作曲の伴奏トラック。判定はせず、後ろで鳴らすだけ。 */
+    private fun scheduleBacking(c: SongChart) {
+        c.backing.forEach { note ->
+            handler.postDelayed({
+                if (!running) return@postDelayed
+                SynthEngine.noteOn(note.pitch, 58, Wave.PIANO)
+                handler.postDelayed(
+                    { SynthEngine.noteOff(note.pitch) },
+                    note.durationMs.toLong().coerceAtLeast(120L)
+                )
+            }, note.timeMs.toLong())
+        }
     }
 
     private fun scheduleDemo(c: SongChart) {

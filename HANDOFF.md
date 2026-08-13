@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.7 (versionCode 8)
+- v1.9 (versionCode 10)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -28,6 +28,10 @@
 | §10, §49, §50 マイク音程検出・うた練習 | `audio/YinDetector.kt` (YIN), `audio/MicEngine.kt`, `ui/SingActivity.kt`, `ui/PitchTrackView.kt`, `ui/TunerActivity.kt`, `ui/PitchMeterView.kt` |
 | §11 作曲 (弾いて入力・グリッド編集) | `song/Quantizer.kt`, `ui/ComposeActivity.kt`, `ui/ComposeGridView.kt`, `data/UserSongStore.kt` |
 | §12〜§14, §55〜§60 歌詞のモーラ制約 | `song/Mora.kt`, `ui/LyricsActivity.kt` |
+| 曲の共有 | `data/UserSongStore.exportJson/importJson` + `ui/ComposeActivity` の [📤 書き出し/取り込み] (共有・コピー・クリップボード・ファイル) |
+| 伴奏づけ | `song/Harmonizer.kt` (小節ごとにダイアトニック三和音を推定 → ブロック/アルペジオ/ベースで生成) |
+| つまみ操作 | `midi/CcLearn.kt` — CC番号を決め打ちせず「最初に動かしたつまみから順に役割を割当」て保存 |
+| BLE MIDI | `midi/BleMidiScanner.kt` + `MidiHub.connectBluetooth` + MIDI画面のスキャンUI |
 | 音楽理論 | `audio/MusicTheory.kt` (スケール／コード／音程名) |
 
 ## 未実装 (次フェーズ)
@@ -35,8 +39,9 @@
   和音つきの曲や調号のある曲を足す場合は `song/SongLibrary` に追加するだけでよい。
 - **Phase 5 (AI音楽先生) は長期保留**。Bonsai 側の受け入れができていないため、着手しない。
   再開する場合は `data/Coach.kt` のヒューリスティックを差し替える形になる。BONSAI_API.md の契約に従うこと。
-- 作曲の残り: 和音入力 (現状は単旋律のみ)、曲のエクスポート/インポート UI (`UserSongStore.exportJson` は実装済みだが画面がない)、
-  歌詞のタイミング再生 (現状は音に合わせてモーラを1つずつ表示するのみ)
+- 練習カレンダー/連続日数 (意図的に未着手)
+- 歌詞のタイミング再生の作り込み (現状は音に合わせてモーラを1つずつ表示するのみ)
+- 伴奏トラックは再生のみで判定対象にしていない。両手練習をやるなら PlayNote に track を持たせる必要がある。
 - BLE MIDI (現状は USB MIDI のみ。`MidiHub` は transport 非依存なので、スキャンUIを足すだけで載る)
 - 能力モデルは現状ヒューリスティック (`data/Coach.kt`)。統計が貯まったら推定へ置き換える。
 - 記録の書き出し (CSV/JSON) と、セッション詳細画面はまだない。
@@ -59,6 +64,11 @@
   楽曲練習・うた練習の曲リストは `reloadCatalog()` で onResume ごとに読み直す (作曲画面で保存した曲がすぐ出る)。
 - 量子化は `Quantizer`。単旋律化のため同一拍位置は最も高い音だけを残し、次の音に食い込む長さは切り詰める。
 - モーラ数えは拗音 (ゃゅょ等) を直前に吸収し、撥音・促音・長音は1モーラとして数える。漢字が残っていると警告を出す。
+- 曲は2トラック (`Song.notes` = メロディ / `Song.accompaniment` = 伴奏)。伴奏は判定せず `SongChart.backing` として再生のみ。
+  作曲画面の [♪ メロディ / 🎵 伴奏] で編集対象を切り替える。伴奏トラックでの「弾いて入力」は和音を保持する
+  (`Quantizer.quantize(polyphonic = true)`)。メロディは従来どおり単旋律化する。
+- MIDI の CC は機種・プリセットで番号が変わるため決め打ちしない。`CcLearn` が役割を順に学習し SharedPreferences に保存する。
+  割当のリセットは作曲画面の [⚙ 設定] から。
 - 曲は「拍位置と長さ (拍)」で持ち、`ChartBuilder.build()` が BPM を掛けて実時間チャートへ展開する。
   部分練習は同じビルダに measures と repeats を渡すだけで作れる。能力モデル (Phase 5) もこの MeasureStat を入力にする想定。
 - 効果音はリアルタイム合成ではなく `SeRenderer` でオフライン生成 → 同じ PCM をそのまま再生と WAV 保存に使う。

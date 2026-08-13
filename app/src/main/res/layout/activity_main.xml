@@ -156,7 +156,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="v1.7 — Phase 1〜4 完了。作曲と歌詞のモーラ検査を追加。Phase 5 (AI音楽先生) は保留中。うた練習・作曲・AI音楽先生は次バージョン以降。"
+            android:text="v1.9 — 曲の書き出し/取り込み、自己ベスト、つまみ操作、伴奏づけ、BLE MIDI、伴奏トラック編集を追加。Phase 5 (AI音楽先生) は保留中。うた練習・作曲・AI音楽先生は次バージョン以降。"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

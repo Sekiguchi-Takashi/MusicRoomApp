@@ -71,6 +71,7 @@ class LyricsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        handler.removeCallbacksAndMessages(null)
         SynthEngine.allNotesOff()
         SynthEngine.stop()
     }
@@ -121,6 +122,8 @@ class LyricsActivity : AppCompatActivity() {
 
     private fun preview() {
         val loaded = song ?: return
+        handler.removeCallbacksAndMessages(null)
+        SynthEngine.allNotesOff()
         SynthEngine.start()
         val msPerBeat = 60_000.0 / loaded.bpm
         val moras = Mora.split(editLyrics.text.toString())

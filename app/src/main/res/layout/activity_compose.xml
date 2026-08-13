@@ -25,6 +25,17 @@
             android:textSize="17sp"
             android:textStyle="bold" />
 
+        <Button
+            android:id="@+id/btnTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:minWidth="0dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="♪ メロディ"
+            android:textSize="12sp" />
+
         <TextView
             android:id="@+id/textStatus"
             android:layout_width="0dp"
@@ -71,6 +82,13 @@
                 android:text="▶ 再生" />
 
             <Button
+                android:id="@+id/btnHarmony"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="🎵 伴奏をつける" />
+
+            <Button
                 android:id="@+id/btnLyrics"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,7 +113,14 @@
                 android:id="@+id/btnLibrary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
                 android:text="📂 曲を開く" />
+
+            <Button
+                android:id="@+id/btnShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📤 書き出し / 取り込み" />
         </LinearLayout>
     </HorizontalScrollView>
 

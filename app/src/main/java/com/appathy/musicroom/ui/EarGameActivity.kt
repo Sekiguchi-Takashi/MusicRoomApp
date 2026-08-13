@@ -59,6 +59,7 @@ class EarGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
 
     override fun onResume() {
         super.onResume()
+        updateStreak()
         SynthEngine.start()
         MidiHub.addListener(this)
         MidiHub.autoConnect()

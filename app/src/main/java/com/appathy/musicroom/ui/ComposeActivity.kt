@@ -1,6 +1,10 @@
 package com.appathy.musicroom.ui
 
 import android.app.AlertDialog
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +16,7 @@ import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.appathy.musicroom.R
 import com.appathy.musicroom.audio.SynthEngine
@@ -21,7 +26,9 @@ import com.appathy.musicroom.data.UserSongStore
 import com.appathy.musicroom.midi.EventSource
 import com.appathy.musicroom.midi.EventType
 import com.appathy.musicroom.midi.MidiHub
+import com.appathy.musicroom.midi.CcLearn
 import com.appathy.musicroom.midi.MusicEvent
+import com.appathy.musicroom.song.Harmonizer
 import com.appathy.musicroom.song.Mora
 import com.appathy.musicroom.song.Quantizer
 import com.appathy.musicroom.song.RawNote
@@ -62,6 +69,13 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     private var playing = false
     private var playStart = 0L
 
+    private lateinit var btnTrack: Button
+    private lateinit var ccLearn: CcLearn
+
+    private val importPicker = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? -> if (uri != null) importFrom(uri) }
+
     private val playTicker = object : Runnable {
         override fun run() {
             if (!playing) return
@@ -87,6 +101,8 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         textStatus = findViewById(R.id.textStatus)
         btnRecord = findViewById(R.id.btnRecord)
         btnPlay = findViewById(R.id.btnPlay)
+        btnTrack = findViewById(R.id.btnTrack)
+        ccLearn = CcLearn(this, "compose", listOf("テンポ", "スクロール"))
 
         gridView.callback = this
         keyboard.callback = this
@@ -94,11 +110,14 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         keyboard.octaveCount = 1
 
         findViewById<Button>(R.id.btnRecord).setOnClickListener {
-            if (recording) stopRecording() else startRecording()
+            if (recording) stopRecording(true) else startRecording()
         }
         findViewById<Button>(R.id.btnPlay).setOnClickListener {
             if (playing) stopPlayback() else startPlayback()
         }
+        btnTrack.setOnClickListener { toggleTrack() }
+        findViewById<Button>(R.id.btnHarmony).setOnClickListener { showHarmony() }
+        findViewById<Button>(R.id.btnShare).setOnClickListener { showShare() }
         findViewById<Button>(R.id.btnSettings).setOnClickListener { showSettings() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { save(true) }
         findViewById<Button>(R.id.btnLibrary).setOnClickListener { showLibrary() }
@@ -120,7 +139,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     override fun onPause() {
         super.onPause()
         stopPlayback()
-        stopRecording()
+        stopRecording(false)
         MidiHub.removeListener(this)
         SynthEngine.allNotesOff()
         SynthEngine.stop()
@@ -139,9 +158,22 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     private fun refresh() {
         textTitle.text = "🎼 " + title
         val moraCount = Mora.count(lyrics)
-        textStatus.text = "音 " + gridView.notes.size + " 個 / BPM " + bpm +
-            " / " + gridView.barCount + "小節" +
+        btnTrack.text = if (gridView.editingBacking) "🎵 伴奏" else "♪ メロディ"
+        textStatus.text = "メロディ " + gridView.notes.size +
+            (if (gridView.backing.isNotEmpty()) " / 伴奏 " + gridView.backing.size else "") +
+            " / BPM " + bpm + " / " + gridView.barCount + "小節" +
             (if (lyrics.isNotBlank()) " / 歌詞 " + moraCount + "モーラ" else "")
+    }
+
+    private fun toggleTrack() {
+        gridView.editingBacking = !gridView.editingBacking
+        refresh()
+        Toast.makeText(
+            this,
+            if (gridView.editingBacking) "伴奏トラックを編集します (和音を置けます)"
+            else "メロディトラックを編集します",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     // --------------------------------------------------------------- recording
@@ -156,7 +188,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         Toast.makeText(this, "自由に弾いてください。停止すると拍にそろえます。", Toast.LENGTH_SHORT).show()
     }
 
-    private fun stopRecording() {
+    private fun stopRecording(fromUser: Boolean) {
         if (!recording) return
         recording = false
         btnRecord.text = "⏺ 弾いて入力"
@@ -167,6 +199,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         }
         pressed.clear()
 
+        if (!fromUser) return
         if (rawTake.size < 2) {
             Toast.makeText(this, "音が少なすぎます。2音以上弾いてください。", Toast.LENGTH_SHORT).show()
             return
@@ -189,13 +222,20 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     }
 
     private fun applyQuantize(useBpm: Int) {
-        val result = Quantizer.quantize(rawTake, useBpm, gridView.grid, beatsPerBar)
+        val toBacking = gridView.editingBacking
+        val result = Quantizer.quantize(
+            rawTake, useBpm, gridView.grid, beatsPerBar, polyphonic = toBacking
+        )
         if (result.notes.isEmpty()) {
             Toast.makeText(this, "譜面に変換できませんでした。", Toast.LENGTH_SHORT).show()
             return
         }
         bpm = useBpm
-        gridView.notes = result.notes.toMutableList()
+        if (toBacking) {
+            gridView.backing = result.notes.toMutableList()
+        } else {
+            gridView.notes = result.notes.toMutableList()
+        }
         val endBeat = result.notes.maxOf { it.beat + it.lengthBeats }
         gridView.barCount = (kotlin.math.ceil(endBeat / beatsPerBar).toInt()).coerceIn(1, 16)
         fitRange()
@@ -209,7 +249,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     }
 
     private fun fitRange() {
-        val notes = gridView.notes
+        val notes = gridView.notes + gridView.backing
         if (notes.isEmpty()) return
         val low = notes.minOf { it.pitch }
         val high = notes.maxOf { it.pitch }
@@ -228,7 +268,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
             Toast.makeText(this, "音がまだありません。", Toast.LENGTH_SHORT).show()
             return
         }
-        stopRecording()
+        stopRecording(false)
         playing = true
         btnPlay.text = "■ 停止"
         playStart = System.nanoTime()
@@ -237,6 +277,16 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
             handler.postDelayed({
                 if (!playing) return@postDelayed
                 SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
+                handler.postDelayed(
+                    { SynthEngine.noteOff(note.pitch) },
+                    (note.lengthBeats * msPerBeat).toLong().coerceAtLeast(120L)
+                )
+            }, (note.beat * msPerBeat).toLong())
+        }
+        gridView.backing.sortedBy { it.beat }.forEach { note ->
+            handler.postDelayed({
+                if (!playing) return@postDelayed
+                SynthEngine.noteOn(note.pitch, 62, Wave.PIANO)
                 handler.postDelayed(
                     { SynthEngine.noteOff(note.pitch) },
                     (note.lengthBeats * msPerBeat).toLong().coerceAtLeast(120L)
@@ -290,6 +340,10 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         AlertDialog.Builder(this)
             .setTitle("曲の設定")
             .setView(view)
+            .setNeutralButton("つまみの割当を消す") { _, _ ->
+                ccLearn.reset()
+                Toast.makeText(this, "割当を消しました。次に動かしたつまみから順に決まります。", Toast.LENGTH_LONG).show()
+            }
             .setNegativeButton("やめる", null)
             .setPositiveButton("適用") { _, _ ->
                 title = editTitle.text.toString().ifBlank { "無題" }
@@ -298,11 +352,31 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
                 gridView.barCount = seekBars.progress + 1
                 gridView.lowPitch = seekLow.progress + 36
                 gridView.highPitch = gridView.lowPitch + 11
+                sanitizeAfterSettings()
                 gridView.scrollBeats = gridView.scrollBeats
                 gridView.postInvalidateOnAnimation()
                 refresh()
             }
             .show()
+    }
+
+    /** 設定で狭めても既存ノートが範囲外に隠れないよう、包含するまで広げ直す。 */
+    private fun sanitizeAfterSettings() {
+        val notes = gridView.notes + gridView.backing
+        if (notes.isEmpty()) return
+        val endBeat = notes.maxOf { it.beat + it.lengthBeats }
+        val neededBars = kotlin.math.ceil(endBeat / beatsPerBar).toInt()
+        if (gridView.barCount < neededBars) {
+            gridView.barCount = neededBars.coerceAtMost(16)
+            Toast.makeText(this, "音があるため小節数を " + gridView.barCount + " に広げました。", Toast.LENGTH_SHORT).show()
+        }
+        val low = notes.minOf { it.pitch }
+        val high = notes.maxOf { it.pitch }
+        if (low < gridView.lowPitch) gridView.lowPitch = low.coerceAtLeast(24)
+        if (high > gridView.highPitch) gridView.highPitch = high.coerceAtMost(96)
+        if (gridView.highPitch - gridView.lowPitch < 11) {
+            gridView.highPitch = (gridView.lowPitch + 11).coerceAtMost(96)
+        }
     }
 
     private fun simpleSeek(onChange: (Int) -> Unit) = object : SeekBar.OnSeekBarChangeListener {
@@ -320,7 +394,8 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         beatsPerBar = beatsPerBar,
         lyrics = lyrics,
         updatedAt = System.currentTimeMillis(),
-        notes = gridView.notes.sortedBy { it.beat }
+        notes = gridView.notes.sortedBy { it.beat },
+        accompaniment = gridView.backing.sortedBy { it.beat }
     )
 
     private fun save(explicit: Boolean) {
@@ -345,7 +420,10 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         bpm = song.bpm
         lyrics = song.lyrics
         gridView.notes = song.notes.toMutableList()
-        val endBeat = song.notes.maxOfOrNull { it.beat + it.lengthBeats } ?: 4.0
+        gridView.backing = song.accompaniment.toMutableList()
+        gridView.editingBacking = false
+        val endBeat = (song.notes + song.accompaniment)
+            .maxOfOrNull { it.beat + it.lengthBeats } ?: 4.0
         gridView.barCount = kotlin.math.ceil(endBeat / beatsPerBar).toInt().coerceIn(1, 16)
         fitRange()
         refresh()
@@ -372,6 +450,8 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
                 title = "無題"
                 lyrics = ""
                 gridView.notes = ArrayList()
+                gridView.backing = ArrayList()
+                gridView.editingBacking = false
                 gridView.barCount = 4
                 gridView.lowPitch = 60
                 gridView.highPitch = 72
@@ -379,6 +459,127 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
             }
             .setNegativeButton("やめる", null)
             .show()
+    }
+
+    // ---------------------------------------------------------------- harmony
+
+    private fun showHarmony() {
+        if (gridView.notes.isEmpty()) {
+            Toast.makeText(this, "先にメロディを作ってください。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val styles = Harmonizer.Style.values()
+        val chords = Harmonizer.analyze(gridView.notes, beatsPerBar, gridView.barCount)
+        val preview = chords.take(8).joinToString(" | ") { it.label }
+        val labels = styles.map { it.label }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "伴奏をつける\n推定コード: " + preview + (if (chords.size > 8) " ..." else "")
+            )
+            .setNegativeButton("やめる", null)
+            .setItems(labels) { _, which ->
+                applyHarmony(chords, styles[which])
+            }
+            .show()
+    }
+
+    private fun applyHarmony(
+        chords: List<com.appathy.musicroom.song.BarChord>,
+        style: Harmonizer.Style
+    ) {
+        val melodyLow = gridView.notes.minOfOrNull { it.pitch } ?: 60
+        val generated = Harmonizer.accompaniment(chords, beatsPerBar, style, melodyLow)
+        gridView.backing = generated.toMutableList()
+        fitRange()
+        refresh()
+        Toast.makeText(
+            this,
+            "伴奏を " + generated.size + " 音つくりました。手直しは [🎵 伴奏] に切り替えてください。",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    // ------------------------------------------------------------ share / io
+
+    private fun showShare() {
+        AlertDialog.Builder(this)
+            .setTitle("書き出し / 取り込み")
+            .setItems(
+                arrayOf("この曲を共有して送る", "この曲をコピー", "クリップボードから取り込む", "ファイルから取り込む")
+            ) { _, which ->
+                when (which) {
+                    0 -> shareSong()
+                    1 -> copySong()
+                    2 -> importFromClipboard()
+                    3 -> importPicker.launch(arrayOf("application/json", "text/plain", "*/*"))
+                }
+            }
+            .setNegativeButton("やめる", null)
+            .show()
+    }
+
+    private fun shareSong() {
+        if (gridView.notes.isEmpty()) {
+            Toast.makeText(this, "音がまだありません。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val json = UserSongStore.exportJson(current())
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_SUBJECT, title + " (音楽室の曲)")
+        intent.putExtra(Intent.EXTRA_TEXT, json)
+        startActivity(Intent.createChooser(intent, "曲を送る"))
+    }
+
+    private fun copySong() {
+        if (gridView.notes.isEmpty()) {
+            Toast.makeText(this, "音がまだありません。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(
+            android.content.ClipData.newPlainText("musicroom_song", UserSongStore.exportJson(current()))
+        )
+        Toast.makeText(this, "曲をコピーしました。", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun importFromClipboard() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()
+        if (text.isNullOrBlank()) {
+            Toast.makeText(this, "クリップボードが空です。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        acceptImported(UserSongStore.importJson(text))
+    }
+
+    private fun importFrom(uri: Uri) {
+        val text = try {
+            contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+        } catch (e: Exception) {
+            null
+        }
+        if (text.isNullOrBlank()) {
+            Toast.makeText(this, "ファイルを読めませんでした。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        acceptImported(UserSongStore.importJson(text))
+    }
+
+    private fun acceptImported(imported: com.appathy.musicroom.data.UserSong?) {
+        if (imported == null) {
+            Toast.makeText(this, "曲のデータとして読めませんでした。", Toast.LENGTH_LONG).show()
+            return
+        }
+        save(false)
+        UserSongStore.save(this, imported)
+        load(imported.id)
+        Toast.makeText(
+            this,
+            "「" + imported.title + "」を取り込みました (" + imported.notes.size + "音)。",
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     private fun openLyrics() {
@@ -406,6 +607,29 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
                 SynthEngine.noteOff(event.note)
                 keyboard.setExternalNote(event.note, false)
                 capture(false, event.note, 0)
+            }
+            EventType.CONTROL_CHANGE -> handleControlChange(event.controller, event.value)
+            else -> {}
+        }
+    }
+
+    /** MiniLab 3 のノブ/フェーダー。最初に動かしたものから順に役割が決まる。 */
+    private fun handleControlChange(cc: Int, value: Int) {
+        if (cc == 64) return
+        val learned = ccLearn.learn(cc)
+        if (learned != null) {
+            Toast.makeText(this, "このつまみを「" + learned + "」に割り当てました。", Toast.LENGTH_SHORT).show()
+            return
+        }
+        when (ccLearn.roleOf(cc)) {
+            "テンポ" -> {
+                if (recording || playing) return
+                bpm = ccLearn.scale(value, 40, 200)
+                refresh()
+            }
+            "スクロール" -> {
+                val total = gridView.totalBeats() - gridView.visibleBeats
+                gridView.scrollBeats = total * value.coerceIn(0, 127) / 127.0
             }
             else -> {}
         }

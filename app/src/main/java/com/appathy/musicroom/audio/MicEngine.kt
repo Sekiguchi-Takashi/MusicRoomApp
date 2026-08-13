@@ -126,9 +126,17 @@ object MicEngine {
                         w++
                         i += 2
                     }
+                    while (w < WINDOW) {
+                        window[w] = 0f
+                        w++
+                    }
                 } else {
-                    for (i in 0 until minOf(read, HOP)) {
+                    val copied = minOf(read, HOP)
+                    for (i in 0 until copied) {
                         window[WINDOW - HOP + i] = raw[i] / 32768f
+                    }
+                    for (i in copied until HOP) {
+                        window[WINDOW - HOP + i] = 0f
                     }
                 }
 

@@ -66,6 +66,7 @@ class ChordGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Ca
 
     override fun onResume() {
         super.onResume()
+        updateStreak()
         SynthEngine.start()
         MidiHub.addListener(this)
         MidiHub.autoConnect()

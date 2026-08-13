@@ -7,7 +7,9 @@ data class Song(
     val title: String,
     val defaultBpm: Int,
     val beatsPerBar: Int,
-    val notes: List<SongNote>
+    val notes: List<SongNote>,
+    /** 伴奏トラック。判定対象にはならず、再生のみに使う。 */
+    val accompaniment: List<SongNote> = emptyList()
 ) {
     val barCount: Int
         get() = notes.maxOfOrNull { ((it.beat + it.lengthBeats - 0.001) / beatsPerBar).toInt() + 1 } ?: 0

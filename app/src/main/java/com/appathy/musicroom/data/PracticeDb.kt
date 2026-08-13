@@ -177,6 +177,29 @@ class PracticeDb private constructor(context: Context) :
         return null
     }
 
+    /** 種目 (+ラベル) の最高スコアと最高正確度。記録がなければ null。 */
+    fun best(kind: String, label: String? = null): Pair<Int, Double>? {
+        val sql = StringBuilder("SELECT MAX(score), MAX(accuracy), COUNT(*) FROM sessions WHERE kind = ?")
+        val args = ArrayList<String>()
+        args.add(kind)
+        if (label != null) {
+            sql.append(" AND label = ?")
+            args.add(label)
+        }
+        readableDatabase.rawQuery(sql.toString(), args.toTypedArray()).use { c ->
+            if (c.moveToFirst() && c.getInt(2) > 0) {
+                return Pair(c.getInt(0), c.getDouble(1))
+            }
+        }
+        return null
+    }
+
+    /** 直近1件 (自分自身を除きたい場合は insert 前に呼ぶ)。 */
+    fun lastSession(kind: String, label: String? = null): SessionRow? {
+        val list = sessions(kind, 30)
+        return if (label == null) list.firstOrNull() else list.firstOrNull { it.label == label }
+    }
+
     /** 曲を横断した苦手小節。直近セッションの平均正確度が低い順。 */
     fun weakMeasures(label: String, limit: Int = 5): List<MeasureRow> {
         val out = ArrayList<MeasureRow>()

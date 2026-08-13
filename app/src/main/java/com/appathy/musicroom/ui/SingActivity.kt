@@ -203,6 +203,7 @@ class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Cal
 
         SynthEngine.start()
         scheduleCountIn(bpm)
+        scheduleBacking(built)
         if (checkGuide.isChecked) scheduleGuide(built)
     }
 
@@ -212,6 +213,19 @@ class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Cal
             handler.postDelayed({
                 if (running) SynthEngine.blip(if (i == 0) 1760.0 else 1175.0, 0.7, Wave.SINE, 0.04)
             }, (i * msPerBeat).toLong())
+        }
+    }
+
+    private fun scheduleBacking(c: SongChart) {
+        c.backing.forEach { note ->
+            handler.postDelayed({
+                if (!running) return@postDelayed
+                SynthEngine.noteOn(note.pitch, 52, Wave.PIANO)
+                handler.postDelayed(
+                    { SynthEngine.noteOff(note.pitch) },
+                    note.durationMs.toLong().coerceAtLeast(120L)
+                )
+            }, note.timeMs.toLong())
         }
     }
 

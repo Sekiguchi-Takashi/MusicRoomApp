@@ -100,24 +100,41 @@ object MidiHub {
         disconnect()
         val label = nameOf(info)
         m.openDevice(info, { device ->
-            if (device == null) {
-                mainHandler.post { notifyConnection() }
-                return@openDevice
-            }
-            val portIndex = firstOutputPortIndex(info)
-            val port = device.openOutputPort(portIndex)
-            if (port == null) {
-                device.close()
-                mainHandler.post { notifyConnection() }
-                return@openDevice
-            }
-            port.connect(receiver)
-            openedDevice = device
-            openedPort = port
-            connectedName = label
-            saveLastDevice(label)
-            mainHandler.post { notifyConnection() }
+            attach(device, label, firstOutputPortIndex(info))
         }, mainHandler)
+    }
+
+    /** BLE MIDI 機器を接続する。USB と同じ経路へ合流させる。 */
+    fun connectBluetooth(device: android.bluetooth.BluetoothDevice, label: String) {
+        val m = manager ?: return
+        disconnect()
+        m.openBluetoothDevice(device, { opened ->
+            attach(opened, label, -1)
+        }, mainHandler)
+    }
+
+    /** 開いた MidiDevice を受け取り、出力ポートを購読する。 */
+    private fun attach(device: MidiDevice?, label: String, preferredPort: Int) {
+        if (device == null) {
+            mainHandler.post { notifyConnection() }
+            return
+        }
+        val portIndex = if (preferredPort >= 0) preferredPort else firstOutputPortIndex(device.info)
+        val port = device.openOutputPort(portIndex)
+        if (port == null) {
+            try {
+                device.close()
+            } catch (_: Exception) {
+            }
+            mainHandler.post { notifyConnection() }
+            return
+        }
+        port.connect(receiver)
+        openedDevice = device
+        openedPort = port
+        connectedName = label
+        saveLastDevice(label)
+        mainHandler.post { notifyConnection() }
     }
 
     fun disconnect() {

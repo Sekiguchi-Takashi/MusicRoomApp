@@ -50,6 +50,29 @@
                 android:text="切断" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btnBle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="📡 Bluetooth MIDI を探す" />
+
+        <TextView
+            android:id="@+id/textBleState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="ワイヤレスの MIDI 機器を使う場合に押してください。"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
+
+        <LinearLayout
+            android:id="@+id/bleList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical" />
+
         <TextView
             style="@style/SectionTitle"
             android:layout_marginTop="18dp"

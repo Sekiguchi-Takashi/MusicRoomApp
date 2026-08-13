@@ -49,6 +49,7 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
     private var running = false
 
     private var score = 0
+    private var previousBest: Pair<Int, Double>? = null
     private var combo = 0
     private var maxCombo = 0
     private val counts = HashMap<Judgement, Int>()
@@ -229,6 +230,19 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
             itemCount = total
         )
 
+        val best = previousBest
+        val bestLine = if (best == null) {
+            "初プレイです。次から前回との比較を出します。"
+        } else {
+            val diff = score - best.first
+            "自己ベスト " + best.first + " 点 (正確性 " + (best.second * 100).toInt() + "%)\n" +
+                when {
+                    diff > 0 -> "自己ベスト更新！ +" + diff + " 点"
+                    diff == 0 -> "自己ベストと同点です。"
+                    else -> "自己ベストまで あと " + (-diff) + " 点"
+                }
+        }
+
         textPanelTitle.text = "RESULT  " + Judge.rank(accuracy)
         textPanelBody.text = score.toString() + " 点\n\n" +
             "PERFECT " + perfect + "\n" +
@@ -238,6 +252,7 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
             "最大COMBO " + maxCombo + "\n" +
             "正確性 " + (accuracy * 100).toInt() + "%\n" +
             "平均ズレ " + String.format("%+.0f", meanError) + " ms\n\n" +
+            bestLine + "\n\n" +
             Judge.tendency(errors)
         btnStart.text = "▶ もう一度"
         panel.visibility = View.VISIBLE

@@ -53,7 +53,8 @@ object Quantizer {
         raw: List<RawNote>,
         bpm: Int,
         grid: Int = GRID_EIGHTH,
-        beatsPerBar: Int = 4
+        beatsPerBar: Int = 4,
+        polyphonic: Boolean = false
     ): QuantizeResult {
         if (raw.isEmpty()) return QuantizeResult(emptyList(), bpm, 0.0, 0)
 
@@ -78,21 +79,38 @@ object Quantizer {
             staged.add(SongNote(snapped, length, note.pitch))
         }
 
-        // 同じ拍位置に複数ある場合は最も高い音を残す (単旋律化)
-        val merged = staged.groupBy { it.beat }
-            .map { entry ->
-                if (entry.value.size > 1) dropped += entry.value.size - 1
-                entry.value.maxByOrNull { it.pitch }!!
-            }
-            .sortedBy { it.beat }
-
-        // 次の音を跨ぐ長さは切り詰める
-        val trimmed = merged.mapIndexed { index, note ->
-            val next = merged.getOrNull(index + 1)
-            if (next != null && note.beat + note.lengthBeats > next.beat) {
-                note.copy(lengthBeats = (next.beat - note.beat).coerceAtLeast(stepBeats))
-            } else {
-                note
+        val trimmed: List<SongNote>
+        if (polyphonic) {
+            // 和音トラック: 同じ拍位置でも音高が違えば残す。完全な重複だけ落とす。
+            val unique = staged.distinctBy { Pair(it.beat, it.pitch) }
+            dropped += staged.size - unique.size
+            // 同じ音高どうしでだけ食い込みを切り詰める
+            trimmed = unique.groupBy { it.pitch }.flatMap { entry ->
+                val line = entry.value.sortedBy { it.beat }
+                line.mapIndexed { index, note ->
+                    val next = line.getOrNull(index + 1)
+                    if (next != null && note.beat + note.lengthBeats > next.beat) {
+                        note.copy(lengthBeats = (next.beat - note.beat).coerceAtLeast(stepBeats))
+                    } else {
+                        note
+                    }
+                }
+            }.sortedBy { it.beat }
+        } else {
+            // 単旋律: 同じ拍位置は最も高い音を残す
+            val merged = staged.groupBy { it.beat }
+                .map { entry ->
+                    if (entry.value.size > 1) dropped += entry.value.size - 1
+                    entry.value.maxByOrNull { it.pitch }!!
+                }
+                .sortedBy { it.beat }
+            trimmed = merged.mapIndexed { index, note ->
+                val next = merged.getOrNull(index + 1)
+                if (next != null && note.beat + note.lengthBeats > next.beat) {
+                    note.copy(lengthBeats = (next.beat - note.beat).coerceAtLeast(stepBeats))
+                } else {
+                    note
+                }
             }
         }
 

@@ -14,6 +14,7 @@ import com.appathy.musicroom.audio.SynthEngine
 import com.appathy.musicroom.audio.Wave
 import com.appathy.musicroom.midi.EventSource
 import com.appathy.musicroom.midi.EventType
+import com.appathy.musicroom.midi.CcLearn
 import com.appathy.musicroom.midi.MidiHub
 import com.appathy.musicroom.midi.MusicEvent
 
@@ -23,6 +24,7 @@ class PlayActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Callbac
     private lateinit var textNow: TextView
     private lateinit var textOctave: TextView
     private lateinit var textMidiBadge: TextView
+    private lateinit var ccLearn: CcLearn
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,7 @@ class PlayActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Callbac
         textOctave = findViewById(R.id.textOctave)
         textMidiBadge = findViewById(R.id.textMidiBadge)
 
+        ccLearn = CcLearn(this, "play", listOf("音量", "オクターブ"))
         keyboard.callback = this
         keyboard.baseNote = 48
         keyboard.octaveCount = 2
@@ -114,7 +117,32 @@ class PlayActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Callbac
                 keyboard.setExternalNote(event.note, false)
             }
             EventType.CONTROL_CHANGE -> {
-                if (event.controller == 64) SynthEngine.setSustain(event.value >= 64)
+                if (event.controller == 64) {
+                    SynthEngine.setSustain(event.value >= 64)
+                } else {
+                    handleControlChange(event.controller, event.value)
+                }
+            }
+            else -> {}
+        }
+    }
+
+    private fun handleControlChange(cc: Int, value: Int) {
+        val learned = ccLearn.learn(cc)
+        if (learned != null) {
+            textMidiBadge.text = "このつまみを「" + learned + "」に割り当てました"
+            return
+        }
+        when (ccLearn.roleOf(cc)) {
+            "音量" -> SynthEngine.masterGain = 0.04 + 0.36 * value.coerceIn(0, 127) / 127.0
+            "オクターブ" -> {
+                val target = 36 + (value.coerceIn(0, 127) / 32) * 12
+                if (target != keyboard.baseNote) {
+                    SynthEngine.allNotesOff()
+                    keyboard.clearExternal()
+                    keyboard.baseNote = target
+                    updateOctaveLabel()
+                }
             }
             else -> {}
         }
