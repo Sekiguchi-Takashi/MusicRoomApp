@@ -7,17 +7,30 @@ android {
     namespace = "com.appathy.musicroom"
     compileSdk = 34
 
+    signingConfigs {
+        create("appathy") {
+            storeFile = rootProject.file("keystore/musicroom.jks")
+            storePassword = "musicroom"
+            keyAlias = "musicroom"
+            keyPassword = "musicroom"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.appathy.musicroom"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "1.9"
+        versionCode = 11
+        versionName = "1.10"
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("appathy")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("appathy")
         }
     }
 

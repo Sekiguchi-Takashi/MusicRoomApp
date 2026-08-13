@@ -1,11 +1,16 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.9 (versionCode 10)
+- v1.10 (versionCode 11)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
 - ビルドは GitHub Actions (`.github/workflows/build.yml`)。Gradle Wrapper は使わず `setup-gradle` で直接実行。push すると Releases に APK が出る。
+- **署名は `keystore/musicroom.jks` に固定してリポジトリへコミットしている** (v1.10〜)。
+  これがないと Actions のランナーが毎回新しい debug キーを自動生成するため署名が変わり、
+  上書きインストールできず「アンインストールしてから」になる = SQLite の練習記録と自作曲が毎回消える。
+  パスワードは musicroom / alias musicroom。private リポジトリ前提の割り切り。Play 配布するなら Secrets へ移すこと。
+  v1.9 以前の APK からは署名が変わるので、一度だけアンインストールが必要 (自作曲は先に書き出しておく)。
 
 ## 実装済み
 | 設計書 | 実装 |

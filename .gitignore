@@ -8,3 +8,5 @@ captures/
 .externalNativeBuild/
 .cxx/
 out/
+
+# keystore/musicroom.jks は意図的にコミットする (署名を固定して上書きインストールするため)
