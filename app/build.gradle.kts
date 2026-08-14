@@ -7,12 +7,29 @@ android {
     namespace = "com.appathy.musicroom"
     compileSdk = 34
 
+    // 配布用の鍵 (ci/appathy.keystore) があればそれを使う。
+    // ローカル/フォールバックは同梱の keystore/musicroom.jks。
+    // どちらも「毎回同じ鍵で署名して上書きインストールできること」が目的。
+    val ciKeystore = rootProject.file("ci/appathy.keystore")
+    val ciStorePassword: String? = System.getenv("APPATHY_STORE_PASSWORD")
+        ?: findProperty("appathyStorePassword") as String?
+    val useCiKeystore = ciKeystore.exists() && ciStorePassword != null
+
     signingConfigs {
         create("appathy") {
-            storeFile = rootProject.file("keystore/musicroom.jks")
-            storePassword = "musicroom"
-            keyAlias = "musicroom"
-            keyPassword = "musicroom"
+            if (useCiKeystore) {
+                storeFile = ciKeystore
+                storePassword = ciStorePassword
+                keyAlias = System.getenv("APPATHY_KEY_ALIAS")
+                    ?: (findProperty("appathyKeyAlias") as String? ?: "appathy")
+                keyPassword = System.getenv("APPATHY_KEY_PASSWORD")
+                    ?: (findProperty("appathyKeyPassword") as String? ?: ciStorePassword)
+            } else {
+                storeFile = rootProject.file("keystore/musicroom.jks")
+                storePassword = "musicroom"
+                keyAlias = "musicroom"
+                keyPassword = "musicroom"
+            }
         }
     }
 
@@ -20,8 +37,8 @@ android {
         applicationId = "com.appathy.musicroom"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.10"
+        versionCode = 12
+        versionName = "1.11"
     }
 
     buildTypes {
