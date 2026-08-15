@@ -35,6 +35,8 @@ object SynthEngine {
 
     private val voices = Array(MAX_VOICES) { Voice() }
     private val lock = Object()
+    /** 物理的に押されている音。ペダルを離したときに残すため。 */
+    private val heldNotes = HashSet<Int>()
 
     private var track: AudioTrack? = null
     private var thread: Thread? = null
@@ -103,14 +105,17 @@ object SynthEngine {
 
     // ------------------------------------------------------------------ play
 
-    fun noteOn(note: Int, velocity: Int, wave: Wave = timbre) {
-        if (note < 0 || note > 127) return
+    /** 発音してトークンを返す。自動で切るときは releaseToken を使う。 */
+    fun noteOn(note: Int, velocity: Int, wave: Wave = timbre): Long {
+        if (note < 0 || note > 127) return -1L
+        synchronized(lock) { heldNotes.add(note) }
         val freq = MusicEvent.frequency(note)
         val amp = (velocity.coerceIn(1, 127) / 127.0).let { it * it * 0.9 + 0.1 }
-        allocate(note, freq, amp, wave, -1.0)
+        return allocate(note, freq, amp, wave, -1.0)
     }
 
     fun noteOff(note: Int) {
+        synchronized(lock) { heldNotes.remove(note) }
         if (sustainPedal) return
         synchronized(lock) {
             voices.forEach { v ->
@@ -119,13 +124,36 @@ object SynthEngine {
         }
     }
 
-    fun allNotesOff() {
-        synchronized(lock) { voices.forEach { if (it.active) it.stage = 3 } }
+    /**
+     * noteOn が返したトークンの音だけを離す。
+     * 同じ音を速く連打したとき、前の音の自動オフが次の音を切ってしまうのを防ぐ。
+     */
+    fun releaseToken(token: Long) {
+        if (token < 0) return
+        synchronized(lock) {
+            val voice = voices.firstOrNull { it.active && it.age == token } ?: return
+            heldNotes.remove(voice.note)
+            if (sustainPedal) return
+            if (voice.stage != 3) voice.stage = 3
+        }
     }
 
+    fun allNotesOff() {
+        synchronized(lock) {
+            heldNotes.clear()
+            voices.forEach { if (it.active) it.stage = 3 }
+        }
+    }
+
+    /** ペダルを離したときは、まだ指が乗っている音は鳴らしたままにする。 */
     fun setSustain(on: Boolean) {
         sustainPedal = on
-        if (!on) allNotesOff()
+        if (on) return
+        synchronized(lock) {
+            voices.forEach { v ->
+                if (v.active && v.stage != 3 && !heldNotes.contains(v.note)) v.stage = 3
+            }
+        }
     }
 
     /** メトロノームのクリックなど、短い単発音。 */
@@ -133,7 +161,7 @@ object SynthEngine {
         allocate(-1, freq, amp, wave, decaySeconds)
     }
 
-    private fun allocate(note: Int, freq: Double, amp: Double, wave: Wave, forcedDecay: Double) {
+    private fun allocate(note: Int, freq: Double, amp: Double, wave: Wave, forcedDecay: Double): Long {
         val v: Voice
         synchronized(lock) {
             v = voices.firstOrNull { !it.active }
@@ -161,6 +189,7 @@ object SynthEngine {
             v.duty = if (wave == Wave.PULSE25) 0.25 else 0.5
             v.age = ++ageCounter
             v.active = true
+            return v.age
         }
     }
 

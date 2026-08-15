@@ -27,22 +27,54 @@ object Quantizer {
 
     /**
      * 打鍵間隔から BPM を推定する。
-     * 最頻の間隔を1拍とみなし、60〜200 の範囲に折り返す。
+     *
+     * 中央値だけで決めると、8分と4分が混ざった演奏や、
+     * 1音だけ長く伸ばした箇所に引きずられて倍・半分にずれる。
+     * そこで中央値から得た大まかな候補の周辺を実際に走査し、
+     * 「全打点をグリッドに吸着させたときの誤差が最も小さい BPM」を選ぶ。
      */
-    fun estimateBpm(raw: List<RawNote>): Int {
+    fun estimateBpm(raw: List<RawNote>, grid: Int = GRID_EIGHTH): Int {
         if (raw.size < 3) return 100
-        val intervals = raw.sortedBy { it.startMs }
-            .zipWithNext { a, b -> (b.startMs - a.startMs).toDouble() }
-            .filter { it > 90.0 }
+        val starts = raw.map { it.startMs.toDouble() }.sorted()
+        val intervals = starts.zipWithNext { a, b -> b - a }.filter { it > 90.0 }
         if (intervals.isEmpty()) return 100
 
-        // 最小間隔の整数倍でヒストグラムを作らず、中央値を基準にする
-        val sorted = intervals.sorted()
-        var unit = sorted[sorted.size / 2]
-        // 中央値が8分や16分なら4分へ引き上げる
+        val sortedIntervals = intervals.sorted()
+        var unit = sortedIntervals[sortedIntervals.size / 2]
         while (unit < 300.0) unit *= 2.0
         while (unit > 1200.0) unit /= 2.0
-        return (60_000.0 / unit).roundToInt().coerceIn(40, 200)
+        val seed = (60_000.0 / unit).roundToInt().coerceIn(40, 200)
+
+        // 種となる BPM とその倍・半分の周辺を走査する
+        val candidates = LinkedHashSet<Int>()
+        listOf(seed / 2, seed, seed * 2).forEach { center ->
+            if (center < 30 || center > 260) return@forEach
+            for (delta in -12..12) {
+                val value = center + delta
+                if (value in 40..200) candidates.add(value)
+            }
+        }
+        if (candidates.isEmpty()) return seed
+
+        val origin = starts.first()
+        var bestBpm = seed
+        var bestError = Double.MAX_VALUE
+        candidates.forEach { candidate ->
+            val step = 60_000.0 / candidate / grid
+            var error = 0.0
+            starts.forEach { start ->
+                val position = (start - origin) / step
+                val offset = position - Math.round(position)
+                error += abs(offset) * step
+            }
+            val mean = error / starts.size
+            // 同じ誤差なら遅い BPM を選ぶ (細かく刻みすぎる解を避ける)
+            if (mean < bestError - 0.5) {
+                bestError = mean
+                bestBpm = candidate
+            }
+        }
+        return bestBpm
     }
 
     /**

@@ -34,6 +34,11 @@ import kotlin.math.roundToInt
 
 class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Callback {
 
+    companion object {
+        /** 音の前後を評価から外す割合。移り変わりの混入を避けるため。 */
+        private const val ONSET_MARGIN = 0.18
+    }
+
     private val keyLabels = arrayOf("1オクターブ下", "5度下", "そのまま", "5度上")
     private val keyShifts = intArrayOf(-12, -7, 0, 7)
     private val tempoLabels = arrayOf("ゆっくり (70%)", "すこし遅め (85%)", "原速 (100%)")
@@ -220,9 +225,9 @@ class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Cal
         c.backing.forEach { note ->
             handler.postDelayed({
                 if (!running) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 52, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 52, Wave.PIANO)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     note.durationMs.toLong().coerceAtLeast(120L)
                 )
             }, note.timeMs.toLong())
@@ -233,9 +238,9 @@ class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Cal
         c.notes.forEach { note ->
             handler.postDelayed({
                 if (!running) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 78, Wave.SINE)
+                val token = SynthEngine.noteOn(note.pitch, 78, Wave.SINE)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     note.durationMs.toLong().coerceAtLeast(120L)
                 )
             }, note.timeMs.toLong())
@@ -248,14 +253,27 @@ class SingActivity : AppCompatActivity(), MicEngine.Listener, PitchTrackView.Cal
 
     // ------------------------------------------------------------- mic input
 
-    override fun onPitch(hz: Double, midi: Double, confidence: Double, level: Double) {
+    override fun onPitch(
+        hz: Double,
+        midi: Double,
+        confidence: Double,
+        level: Double,
+        timestampNanos: Long
+    ) {
         if (!running) {
             if (hz > 0) textNow.text = MusicEvent.noteName(midi.roundToInt())
             return
         }
         val c = chart ?: return
-        val now = currentTimeMs()
-        val active = c.notes.firstOrNull { now >= it.timeMs && now <= it.timeMs + it.durationMs }
+        // 判定にはマイク側の録音時刻を使う。UI へ届くまでの遅れを含めないため。
+        val now = (timestampNanos - startNanos) / 1_000_000.0
+
+        // 音の入りと終わりは、前後の音への移り変わりやしゃくり上げが混ざる。
+        // 中央の区間だけを評価に使い、表示用の軌跡は全区間そのまま描く。
+        val active = c.notes.firstOrNull { note ->
+            val margin = note.durationMs * ONSET_MARGIN
+            now >= note.timeMs + margin && now <= note.timeMs + note.durationMs - margin
+        }
         if (active != null) {
             totalFrames[active] = (totalFrames[active] ?: 0) + 1
             if (hz > 0) {

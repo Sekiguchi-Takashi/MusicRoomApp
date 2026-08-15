@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.12 (versionCode 13)
+- v1.13 (versionCode 14)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -60,6 +60,19 @@
 - BLE MIDI (現状は USB MIDI のみ。`MidiHub` は transport 非依存なので、スキャンUIを足すだけで載る)
 - 能力モデルは現状ヒューリスティック (`data/Coach.kt`)。統計が貯まったら推定へ置き換える。
 - 記録の書き出し (CSV/JSON) と、セッション詳細画面はまだない。
+
+## 精度まわりの約束 (v1.13)
+- **自動で音を切るときは `SynthEngine.noteOn` が返すトークンを `releaseToken` に渡す。**
+  `noteOff(pitch)` はその音高の声部を全部離すため、同じ音を速く連打すると前の音の自動オフが次の音を切ってしまう。
+  鍵盤・MIDI の離鍵は従来どおり `noteOff(pitch)` でよい。
+- サステインペダルを離したときは、まだ指が乗っている音 (`heldNotes`) を残す。以前は全部消していた。
+- YIN はオクターブ上に取り違えやすいので、2倍・3倍の周期にも十分深い谷があればそちらを採用する (`correctOctave`)。
+  さらに直近3フレームの中央値で単発の誤検出を落とす。
+- 歌唱判定の時刻は `MicEngine` が渡す録音時刻 (窓の中心ぶん遡らせた値) を使う。UI へ届くまでの遅れを含めないため。
+- 歌唱の音程評価は音の前後 18% を除いた中央区間だけを見る (`SingActivity.ONSET_MARGIN`)。
+  しゃくり上げや次の音への移り変わりが混ざるのを避けるため。表示用の軌跡は全区間そのまま描く。
+- BPM 推定は中央値だけで決めず、候補 BPM ごとに全打点の吸着誤差を計算して最小のものを選ぶ (`Quantizer.estimateBpm`)。
+- 自己ベストは MAX(score) と MAX(accuracy) を別々に取らず、最高スコアを出した回の行ごと取る。
 
 ## 設計上の約束
 - **SynthEngine.timbre (グローバル音色) は自由演奏と録音・再生だけが使う。**

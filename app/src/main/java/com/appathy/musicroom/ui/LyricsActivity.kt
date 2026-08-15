@@ -129,9 +129,9 @@ class LyricsActivity : AppCompatActivity() {
         val moras = Mora.split(editLyrics.text.toString())
         notes.forEachIndexed { index, note ->
             handler.postDelayed({
-                SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     (note.lengthBeats * msPerBeat).toLong().coerceAtLeast(120L)
                 )
                 val mora = moras.getOrNull(index)

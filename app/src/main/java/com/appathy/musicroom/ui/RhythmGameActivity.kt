@@ -148,8 +148,8 @@ class RhythmGameActivity : AppCompatActivity(), MidiHub.Listener, RhythmView.Cal
     }
 
     private fun hit(lane: Int, velocity: Int) {
-        SynthEngine.noteOn(ChartGenerator.noteOfLane(lane), velocity, Wave.PIANO)
-        handler.postDelayed({ SynthEngine.noteOff(ChartGenerator.noteOfLane(lane)) }, 180)
+        val token = SynthEngine.noteOn(ChartGenerator.noteOfLane(lane), velocity, Wave.PIANO)
+        handler.postDelayed({ SynthEngine.releaseToken(token) }, 180)
         rhythmView.flash(lane)
         if (!running) return
 

@@ -87,7 +87,13 @@ class TunerActivity : AppCompatActivity(), MicEngine.Listener {
         }
     }
 
-    override fun onPitch(hz: Double, midi: Double, confidence: Double, level: Double) {
+    override fun onPitch(
+        hz: Double,
+        midi: Double,
+        confidence: Double,
+        level: Double,
+        timestampNanos: Long
+    ) {
         barLevel.progress = (level * 400).toInt().coerceIn(0, 100)
         if (hz <= 0.0) {
             meter.voiced = false

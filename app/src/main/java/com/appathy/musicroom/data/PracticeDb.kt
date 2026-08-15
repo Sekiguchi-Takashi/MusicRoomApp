@@ -177,19 +177,21 @@ class PracticeDb private constructor(context: Context) :
         return null
     }
 
-    /** 種目 (+ラベル) の最高スコアと最高正確度。記録がなければ null。 */
+    /**
+     * 種目 (+ラベル) の自己ベスト = 最高スコアを出した「その回」のスコアと正確度。
+     * MAX(score) と MAX(accuracy) を別々に取ると、別の回の数字が混ざるので行ごと取る。
+     */
     fun best(kind: String, label: String? = null): Pair<Int, Double>? {
-        val sql = StringBuilder("SELECT MAX(score), MAX(accuracy), COUNT(*) FROM sessions WHERE kind = ?")
+        val sql = StringBuilder("SELECT score, accuracy FROM sessions WHERE kind = ?")
         val args = ArrayList<String>()
         args.add(kind)
         if (label != null) {
             sql.append(" AND label = ?")
             args.add(label)
         }
+        sql.append(" ORDER BY score DESC, accuracy DESC LIMIT 1")
         readableDatabase.rawQuery(sql.toString(), args.toTypedArray()).use { c ->
-            if (c.moveToFirst() && c.getInt(2) > 0) {
-                return Pair(c.getInt(0), c.getDouble(1))
-            }
+            if (c.moveToFirst()) return Pair(c.getInt(0), c.getDouble(1))
         }
         return null
     }

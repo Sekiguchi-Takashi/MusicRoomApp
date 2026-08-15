@@ -151,8 +151,8 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     override fun onNotesChanged() = refresh()
 
     override fun onNotePreview(pitch: Int) {
-        SynthEngine.noteOn(pitch, 96, Wave.PIANO)
-        handler.postDelayed({ SynthEngine.noteOff(pitch) }, 220)
+        val token = SynthEngine.noteOn(pitch, 96, Wave.PIANO)
+        handler.postDelayed({ SynthEngine.releaseToken(token) }, 220)
     }
 
     private fun refresh() {
@@ -208,7 +208,7 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
     }
 
     private fun confirmQuantize() {
-        val estimated = Quantizer.estimateBpm(rawTake)
+        val estimated = Quantizer.estimateBpm(rawTake, gridView.grid)
         val message = "録音した " + rawTake.size + " 音を拍にそろえます。\n" +
             "推定テンポ: " + estimated + " BPM\n\n" +
             "いまの譜面に追加するのではなく、置き換えます。"
@@ -276,9 +276,9 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         gridView.notes.sortedBy { it.beat }.forEach { note ->
             handler.postDelayed({
                 if (!playing) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     (note.lengthBeats * msPerBeat).toLong().coerceAtLeast(120L)
                 )
             }, (note.beat * msPerBeat).toLong())
@@ -286,9 +286,9 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         gridView.backing.sortedBy { it.beat }.forEach { note ->
             handler.postDelayed({
                 if (!playing) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 62, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 62, Wave.PIANO)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     (note.lengthBeats * msPerBeat).toLong().coerceAtLeast(120L)
                 )
             }, (note.beat * msPerBeat).toLong())

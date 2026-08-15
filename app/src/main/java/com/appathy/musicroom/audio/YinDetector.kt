@@ -13,17 +13,52 @@ class YinDetector(private val sampleRate: Int, bufferSize: Int) {
 
     var threshold = 0.15
 
-    /** 戻り値: [周波数Hz, 確からしさ0..1]。無声なら周波数 -1。 */
+    /**
+     * 戻り値: [周波数Hz, 確からしさ0..1]。無声なら周波数 -1。
+     * 確からしさは yin の谷の深さそのもの (1 - yin[tau]) を 0..1 に写したもので、
+     * 閾値を通った時点で 0.85 以上になるため、呼び出し側の足切りは
+     * この値ではなく RMS と周波数範囲で行うこと。
+     */
     fun detect(buffer: FloatArray): DoubleArray {
         difference(buffer)
         cumulativeMeanNormalized()
-        val tau = absoluteThreshold()
+        var tau = absoluteThreshold()
         if (tau < 0) return doubleArrayOf(-1.0, 0.0)
+        tau = correctOctave(tau)
         val refined = parabolicInterpolation(tau)
         if (refined <= 0.0) return doubleArrayOf(-1.0, 0.0)
         val hz = sampleRate / refined
         val probability = (1.0 - yin[tau]).coerceIn(0.0, 1.0)
         return doubleArrayOf(hz, probability)
+    }
+
+    /**
+     * オクターブ上に取り違える YIN の典型的な失敗を補正する。
+     * 2倍・3倍の周期にも十分深い谷があるなら、そちらが本当の基本周期。
+     * 歌声は倍音が強く、これがないと 1オクターブ上に張り付くことがある。
+     */
+    private fun correctOctave(tau: Int): Int {
+        var best = tau
+        for (multiple in 2..3) {
+            val candidate = tau * multiple
+            if (candidate >= half - 1) break
+            val local = localMinimumNear(candidate) ?: continue
+            // 谷が浅すぎなければ、より長い周期 (低い音) を採用する
+            if (yin[local] < threshold * 1.25 && yin[local] < yin[best] * 1.4) {
+                best = local
+            }
+        }
+        return best
+    }
+
+    /** 指定位置の周辺 (±3) で最も深い点を探す。 */
+    private fun localMinimumNear(center: Int): Int? {
+        val from = (center - 3).coerceAtLeast(1)
+        val to = (center + 3).coerceAtMost(half - 2)
+        if (from > to) return null
+        var best = from
+        for (i in from..to) if (yin[i] < yin[best]) best = i
+        return best
     }
 
     private fun difference(buffer: FloatArray) {

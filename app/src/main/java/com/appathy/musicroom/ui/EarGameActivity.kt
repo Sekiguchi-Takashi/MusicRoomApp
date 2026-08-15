@@ -113,8 +113,8 @@ class EarGameActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         keyboard.clearExternal()
         question.forEachIndexed { index, note ->
             handler.postDelayed({
-                SynthEngine.noteOn(note, 100, Wave.PIANO)
-                handler.postDelayed({ SynthEngine.noteOff(note) }, 520)
+                val token = SynthEngine.noteOn(note, 100, Wave.PIANO)
+                handler.postDelayed({ SynthEngine.releaseToken(token) }, 520)
             }, index * 620L)
         }
     }

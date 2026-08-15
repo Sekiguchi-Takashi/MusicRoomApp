@@ -174,9 +174,9 @@ class SongPracticeActivity : AppCompatActivity(), MidiHub.Listener, SongRollView
         c.backing.forEach { note ->
             handler.postDelayed({
                 if (!running) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 58, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 58, Wave.PIANO)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     note.durationMs.toLong().coerceAtLeast(120L)
                 )
             }, note.timeMs.toLong())
@@ -187,10 +187,10 @@ class SongPracticeActivity : AppCompatActivity(), MidiHub.Listener, SongRollView
         c.notes.forEach { note ->
             handler.postDelayed({
                 if (!running) return@postDelayed
-                SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
+                val token = SynthEngine.noteOn(note.pitch, 100, Wave.PIANO)
                 rollView.flash(note.pitch)
                 handler.postDelayed(
-                    { SynthEngine.noteOff(note.pitch) },
+                    { SynthEngine.releaseToken(token) },
                     note.durationMs.toLong().coerceAtLeast(120L)
                 )
             }, note.timeMs.toLong())
@@ -224,8 +224,8 @@ class SongPracticeActivity : AppCompatActivity(), MidiHub.Listener, SongRollView
     }
 
     private fun hit(pitch: Int, velocity: Int) {
-        SynthEngine.noteOn(pitch, velocity, Wave.PIANO)
-        handler.postDelayed({ SynthEngine.noteOff(pitch) }, 260)
+        val token = SynthEngine.noteOn(pitch, velocity, Wave.PIANO)
+        handler.postDelayed({ SynthEngine.releaseToken(token) }, 260)
         rollView.flash(pitch)
         val c = chart ?: return
         if (!running || demoMode) return
