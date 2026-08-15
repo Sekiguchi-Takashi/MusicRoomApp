@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.11 (versionCode 12)
+- v1.12 (versionCode 13)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -11,7 +11,10 @@
 - `git pull --rebase origin main` は必須。カタログ管理システムが release.yml と `ci/appathy.keystore` を
   直接コミットするため、無いと push が rejected になる。
 - **`ci/` と `.github/workflows/release.yml` は削除しない** (配布ビルドに必要)。
-- 旧 `.github/workflows/build.yml` は削除した (push ごとに Release を作るため、deploy.sh のタグ採番と衝突していた)。
+- `.github/workflows/build.yml` は **コンパイル確認専用**。以下を入れないこと:
+  - `actions/upload-artifact` — Artifacts の無料枠 (0.5GB) が枯渇し "Artifact storage quota has been hit" でビルドが落ちる。
+    APK は Release から配布するので Artifacts は不要。
+  - Release 作成ステップ — push ごとに Release ができると deploy.sh のタグ採番 (最新 Release のタグを +1) と衝突する。
 - **署名は固定鍵。`ci/appathy.keystore` があり、かつパスワードが env / gradle プロパティで渡されていればそれを使い、
   無ければ同梱の `keystore/musicroom.jks` を使う** (v1.10〜)。
   これがないと Actions のランナーが毎回新しい debug キーを自動生成するため署名が変わり、
