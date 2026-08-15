@@ -1,0 +1,42 @@
+name: Stamp
+
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add APK fingerprints to release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -z "$TAG" ]; then
+            TAG=$(gh api repos/${GITHUB_REPOSITORY}/releases/latest --jq .tag_name)
+          fi
+          REL=$(gh api repos/${GITHUB_REPOSITORY}/releases/tags/${TAG})
+          ID=$(printf '%s' "$REL" | jq -r .id)
+          BODY=$(printf '%s' "$REL" | jq -r '.body // ""')
+          BODY=$(printf '%s' "$BODY" | grep -v '^sha256 ' || true)
+          LINES=""
+          for row in $(printf '%s' "$REL" | jq -r '.assets[] | select(.name|endswith(".apk")) | "\(.name)|\(.id)"'); do
+            NAME=${row%%|*}
+            AID=${row##*|}
+            gh api -H "Accept: application/octet-stream" repos/${GITHUB_REPOSITORY}/releases/assets/${AID} > /tmp/a.apk
+            SUM=$(sha256sum /tmp/a.apk | cut -d ' ' -f 1)
+            LINES="${LINES}sha256 ${NAME} ${SUM}"$'\n'
+          done
+          if [ -z "$LINES" ]; then
+            echo "APK アセットがありません"
+            exit 0
+          fi
+          NEW="${BODY}"$'\n'"${LINES}"
+          jq -n --arg b "$NEW" '{body:$b}' > /tmp/body.json
+          gh api -X PATCH repos/${GITHUB_REPOSITORY}/releases/${ID} --input /tmp/body.json > /dev/null
+          printf 'stamped %s\n' "$TAG"
