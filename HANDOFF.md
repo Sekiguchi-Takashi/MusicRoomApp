@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.13 (versionCode 14)
+- v1.14 (versionCode 15)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -11,10 +11,11 @@
 - `git pull --rebase origin main` は必須。カタログ管理システムが release.yml と `ci/appathy.keystore` を
   直接コミットするため、無いと push が rejected になる。
 - **`ci/` と `.github/workflows/release.yml` は削除しない** (配布ビルドに必要)。
-- `.github/workflows/build.yml` は **コンパイル確認専用**。以下を入れないこと:
-  - `actions/upload-artifact` — Artifacts の無料枠 (0.5GB) が枯渇し "Artifact storage quota has been hit" でビルドが落ちる。
-    APK は Release から配布するので Artifacts は不要。
-  - Release 作成ステップ — push ごとに Release ができると deploy.sh のタグ採番 (最新 Release のタグを +1) と衝突する。
+- **`build.yml` は作らない・同梱しない** (納品規約)。CI は `release.yml` のタグ起動のみに一本化する。
+  `actions/upload-artifact` も使わない (Artifacts 無料枠 0.5GB が枯渇し全ビルドが落ちる)。APK は Release から配布する。
+- **次タグはローカルのタグ一覧から算出する。** `git fetch --tags --force` → `git tag --list 'v*' | sort -V | tail -1` →
+  パッチ +1 → `git tag` → `git push origin タグ名`。GitHub API の `git/ref/heads/main` 参照は反映遅延で
+  一つ前のコミットにタグが付くため使わない。deploy.sh の第2引数に `notag` を渡すと push のみで終わる。
 - **署名は固定鍵。`ci/appathy.keystore` があり、かつパスワードが env / gradle プロパティで渡されていればそれを使い、
   無ければ同梱の `keystore/musicroom.jks` を使う** (v1.10〜)。
   これがないと Actions のランナーが毎回新しい debug キーを自動生成するため署名が変わり、
