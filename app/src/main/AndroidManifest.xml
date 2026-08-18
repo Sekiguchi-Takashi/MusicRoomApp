@@ -12,6 +12,8 @@
         android:name="android.hardware.bluetooth_le"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-permission
@@ -92,6 +94,10 @@
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ui.LyricsActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.MusicSearchActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
     </application>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Last.fm のAPIキーを入力してください。取得は無料です。\n\n1. last.fm/api/account/create を開く\n2. アプリ名と連絡先メールを入れて送信する\n3. 表示された API key をここに貼り付ける\n\nCallback URL は空欄で構いません。読み取りだけに使うため、Shared secret は不要です。"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp" />
+
+    <EditText
+        android:id="@+id/editKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="API key (32文字程度)"
+        android:importantForAutofill="no"
+        android:inputType="textNoSuggestions"
+        android:textColor="@color/text_primary" />
+
+    <TextView
+        android:id="@+id/textKeyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text=""
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp" />
+</LinearLayout>

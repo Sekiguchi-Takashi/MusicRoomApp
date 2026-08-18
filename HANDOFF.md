@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.14 (versionCode 15)
+- v1.15 (versionCode 16)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -48,6 +48,7 @@
 | 伴奏づけ | `song/Harmonizer.kt` (小節ごとにダイアトニック三和音を推定 → ブロック/アルペジオ/ベースで生成) |
 | つまみ操作 | `midi/CcLearn.kt` — CC番号を決め打ちせず「最初に動かしたつまみから順に役割を割当」て保存 |
 | BLE MIDI | `midi/BleMidiScanner.kt` + `MidiHub.connectBluetooth` + MIDI画面のスキャンUI |
+| 音楽検索 (Last.fm) | `music/LastFmApi.kt`, `ui/MusicSearchActivity.kt` — ws.audioscrobbler.com/2.0/ の読み取り系。API キーはアプリ内で入力し SharedPreferences (`lastfm`) に保存。リポジトリにも ZIP にも鍵は含めない |
 | 音楽理論 | `audio/MusicTheory.kt` (スケール／コード／音程名) |
 
 ## 未実装 (次フェーズ)
@@ -74,6 +75,18 @@
   しゃくり上げや次の音への移り変わりが混ざるのを避けるため。表示用の軌跡は全区間そのまま描く。
 - BPM 推定は中央値だけで決めず、候補 BPM ごとに全打点の吸着誤差を計算して最小のものを選ぶ (`Quantizer.estimateBpm`)。
 - 自己ベストは MAX(score) と MAX(accuracy) を別々に取らず、最高スコアを出した回の行ごと取る。
+
+## Last.fm 連携の約束
+- エンドポイントは `https://ws.audioscrobbler.com/2.0/`。全メソッドを `method` パラメータで切り替え、`format=json` を付ける。
+- 読み取り系 (track.search / artist.search / tag.getTopTracks / chart.getTopTracks / track.getInfo /
+  artist.getInfo / artist.getTopTracks) は **API キーのみで使える**。Shared secret とセッション認証は書き込み系
+  (scrobble 等) 専用なので実装していない。
+- **API キーはコードにもリポジトリにも埋め込まない。** 画面の [🔑 APIキー設定] から入力し、SharedPreferences に保存する。
+- 結果が1件のとき Last.fm は配列ではなくオブジェクトを返すことがある。`optJSONArray` だけに頼らないこと。
+- エラー番号は 6=見つからない、10=キーが不正、26=キー停止、29=レート超過。日本語に置き換えて表示している。
+- 通信は `LastFmApi.run()` の単一スレッドで行い、結果をメインスレッドへ戻す。UI から直接 call() を呼ばない。
+- Last.fm はメロディや譜面のデータを持たないため、検索結果から練習用の譜面は作れない。
+  作れるのは曲名を引き継いだ空の作曲データまで。
 
 ## 設計上の約束
 - **SynthEngine.timbre (グローバル音色) は自由演奏と録音・再生だけが使う。**

@@ -11,6 +11,7 @@ import com.appathy.musicroom.ui.EarGameActivity
 import com.appathy.musicroom.ui.ComposeActivity
 import com.appathy.musicroom.ui.HistoryActivity
 import com.appathy.musicroom.ui.MetronomeActivity
+import com.appathy.musicroom.ui.MusicSearchActivity
 import com.appathy.musicroom.ui.MidiActivity
 import com.appathy.musicroom.ui.PlayActivity
 import com.appathy.musicroom.ui.RecordActivity
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity(), MidiHub.Listener {
         findViewById<View>(R.id.btnRepetition).setOnClickListener { open(RepetitionActivity::class.java) }
         findViewById<View>(R.id.btnHistory).setOnClickListener { open(HistoryActivity::class.java) }
         findViewById<View>(R.id.btnCompose).setOnClickListener { open(ComposeActivity::class.java) }
+        findViewById<View>(R.id.btnSearch).setOnClickListener { open(MusicSearchActivity::class.java) }
         findViewById<View>(R.id.btnSoundLab).setOnClickListener { open(SoundLabActivity::class.java) }
         findViewById<View>(R.id.btnRhythm).setOnClickListener { open(RhythmGameActivity::class.java) }
         findViewById<View>(R.id.btnEar).setOnClickListener { open(EarGameActivity::class.java) }

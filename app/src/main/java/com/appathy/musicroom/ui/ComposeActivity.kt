@@ -38,6 +38,8 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
 
     companion object {
         const val EXTRA_SONG_ID = "song_id"
+        /** 音楽検索から曲名だけを引き継いで新しい曲を始めるときに使う。 */
+        const val EXTRA_NEW_TITLE = "new_title"
     }
 
     private val gridLabels = arrayOf("4分音符", "8分音符", "16分音符", "3連符")
@@ -124,6 +126,14 @@ class ComposeActivity : AppCompatActivity(), MidiHub.Listener, KeyboardView.Call
         findViewById<Button>(R.id.btnLyrics).setOnClickListener { openLyrics() }
 
         intent.getStringExtra(EXTRA_SONG_ID)?.let { load(it) }
+        intent.getStringExtra(EXTRA_NEW_TITLE)?.let { incoming ->
+            songId = UserSongStore.newId()
+            title = incoming
+            lyrics = ""
+            gridView.notes = ArrayList()
+            gridView.backing = ArrayList()
+            gridView.editingBacking = false
+        }
         refresh()
     }
 
