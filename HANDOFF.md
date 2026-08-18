@@ -1,7 +1,7 @@
 # MusicRoomApp / 音楽室アプリ HANDOFF
 
 ## 現在地
-- v1.15 (versionCode 16)
+- v1.16 (versionCode 17)
 - 設計書『音楽室アプリ｜スマホ版設計書』の **Phase 1〜4 完了** (Phase 5 は保留) を実装済み
 - パッケージ: `com.appathy.musicroom` / アプリ名: 音楽室
 - minSdk 26 / compileSdk 34 / AGP 8.5.2 / Kotlin 1.9.24 / Gradle 8.7
@@ -16,8 +16,9 @@
 - **次タグはローカルのタグ一覧から算出する。** `git fetch --tags --force` → `git tag --list 'v*' | sort -V | tail -1` →
   パッチ +1 → `git tag` → `git push origin タグ名`。GitHub API の `git/ref/heads/main` 参照は反映遅延で
   一つ前のコミットにタグが付くため使わない。deploy.sh の第2引数に `notag` を渡すと push のみで終わる。
-- **署名は固定鍵。`ci/appathy.keystore` があり、かつパスワードが env / gradle プロパティで渡されていればそれを使い、
-  無ければ同梱の `keystore/musicroom.jks` を使う** (v1.10〜)。
+- **署名は `ci/appathy.keystore` に一本化** (v1.16〜)。`release.yml` の apksigner が
+  `--ks-pass pass:appathy-store --ks-key-alias appathy` で署名し直すため、Gradle 側に signingConfig は置かない。
+  v1.10〜v1.15 で同梱していた `keystore/musicroom.jks` は削除した (署名が二重になるうえ、鍵をリポジトリに置く必要がない)。
   これがないと Actions のランナーが毎回新しい debug キーを自動生成するため署名が変わり、
   上書きインストールできず「アンインストールしてから」になる = SQLite の練習記録と自作曲が毎回消える。
   パスワードは musicroom / alias musicroom。private リポジトリ前提の割り切り。Play 配布するなら Secrets へ移すこと。
@@ -62,6 +63,14 @@
 - BLE MIDI (現状は USB MIDI のみ。`MidiHub` は transport 非依存なので、スキャンUIを足すだけで載る)
 - 能力モデルは現状ヒューリスティック (`data/Coach.kt`)。統計が貯まったら推定へ置き換える。
 - 記録の書き出し (CSV/JSON) と、セッション詳細画面はまだない。
+
+## release.yml の事故メモ (v1.16 で修正)
+- カタログ管理システムが最初に入れた `release.yml` は `printf "sha256=%s\n"` の `\n` が実際の改行に化けており、
+  続きの行が字下げ0から始まって `run: |` のブロックを抜けていた。YAML 構文エラーになり、ジョブが1つも起動しない
+  (Actions 上は Total duration が空・グラフなし・Annotations 1 error として出る)。
+- そのため 97bfd75 で「自前リリースと重複」として削除され、以後タグを打ってもビルドが走らない状態が続いていた。
+- v1.16 でこの1行を修正して復元済み。**同じ現象を疑うときは、まず Total duration が空かどうかを見る。**
+  空ならジョブ以前の YAML パース失敗で、ビルドログは存在しない。
 
 ## 精度まわりの約束 (v1.13)
 - **自動で音を切るときは `SynthEngine.noteOn` が返すトークンを `releaseToken` に渡す。**

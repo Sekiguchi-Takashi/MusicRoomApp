@@ -6,8 +6,9 @@ REPO=MusicRoomApp
 if [ ! -d .git ]; then git init -b main; fi
 git remote remove origin 2>/dev/null
 git remote add origin "https://${GHUSER}:${TOKEN}@github.com/${GHUSER}/${REPO}.git"
-rm -f .github/workflows/build.yml
-git rm -r --cached --ignore-unmatch .github/workflows/build.yml
+rm -f keystore/musicroom.jks
+rmdir keystore 2>/dev/null
+git rm -r --cached --ignore-unmatch keystore
 git add -A
 git commit -m "${1:-update}"
 git pull --rebase origin main

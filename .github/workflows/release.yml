@@ -29,7 +29,7 @@ jobs:
       - name: Collect, align and sign APKs
         run: |
           if [ ! -f ci/appathy.keystore ]; then
-            echo "ci/appathy.keystore がありません。rollout.sh を実行してください。"
+            printf '%s\n' "ci/appathy.keystore がありません。rollout.sh を実行してください。"
             exit 1
           fi
           mkdir -p out
@@ -45,8 +45,7 @@ jobs:
             "$TOOLS/apksigner" sign --ks ci/appathy.keystore --ks-pass pass:appathy-store --ks-key-alias appathy "$o"
             "$TOOLS/apksigner" verify --verbose "$o"
             sha=$(sha256sum "$o" | cut -d " " -f 1)
-            printf "sha256=%s
-" "$sha" > "${o%.apk}.meta"
+            printf 'sha256=%s\n' "$sha" > "${o%.apk}.meta"
           done
           ls -la out/
       - uses: softprops/action-gh-release@v2
